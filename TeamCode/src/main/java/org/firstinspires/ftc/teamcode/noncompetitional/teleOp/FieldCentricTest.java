@@ -16,6 +16,7 @@ public class FieldCentricTest extends LinearOpMode {
 
         waitForStart();
 
+        while (opModeIsActive()) {
             if (gamepad1.a) {
                 robotConfig.setMotorPowers(1, 0, 0, 0); // Testează front-left
             } else if (gamepad1.b) {
@@ -29,3 +30,4 @@ public class FieldCentricTest extends LinearOpMode {
             }
         }
     }
+}
