@@ -26,37 +26,48 @@ public class FieldCentric extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            double y = -gamepad1.left_stick_y; // Y-ul este inversat
-            double x = gamepad1.left_stick_x;
-            double rx = gamepad1.right_stick_x;
+            double y = -gamepad1.left_stick_y; // Mișcare înainte/înapoi
+            double x = gamepad1.left_stick_x; // Mișcare stânga/dreapta
+            double rx = gamepad1.right_stick_x; // Rotație
 
             // Resetează yaw-ul dacă este apăsat butonul "Options"
             if (gamepad1.options) {
                 imu.resetYaw();
             }
 
+            // Obține yaw-ul robotului
             double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
-            // Calculează mișcarea relativă la orientarea robotului
+            // Transformă mișcarea pentru a fi relativă la orientarea robotului
             double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
             double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
-            rotX = rotX * 1.1;  // Compensare pentru strafing imperfect
+            // Ajustare pentru strafing (opțional - poate fi eliminată dacă cauzează probleme)
+            rotX *= 1.1;
 
-            // Calculăm puterile motoarelor
+            // Calculează puterile motoarelor
             double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
             double frontLeftPower = (rotY + rotX + rx) / denominator;
             double backLeftPower = (rotY - rotX + rx) / denominator;
             double frontRightPower = (rotY - rotX - rx) / denominator;
             double backRightPower = (rotY + rotX - rx) / denominator;
 
-            // Setăm puterile folosind configurarea
+            // Setează puterile motoarelor
             robotConfig.setMotorPowers(
                     frontLeftPower,
                     backLeftPower,
                     frontRightPower,
                     backRightPower
             );
+            // Debugging: afișează valorile pe ecran
+            telemetry.addData("Yaw (rad)", botHeading);
+            telemetry.addData("RotX", rotX);
+            telemetry.addData("RotY", rotY);
+            telemetry.addData("Front Left Power", frontLeftPower);
+            telemetry.addData("Back Left Power", backLeftPower);
+            telemetry.addData("Front Right Power", frontRightPower);
+            telemetry.addData("Back Right Power", backRightPower);
+            telemetry.update();
         }
     }
 }

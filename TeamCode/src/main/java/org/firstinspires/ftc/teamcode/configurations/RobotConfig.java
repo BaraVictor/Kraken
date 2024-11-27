@@ -21,6 +21,8 @@ public class RobotConfig {
         // Setează direcțiile motoarelor
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
+        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public void setMotorPowers(double frontLeftPower, double backLeftPower, double frontRightPower, double backRightPower) {
