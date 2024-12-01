@@ -1,0 +1,33 @@
+-------------------------------------
+
+Autonomie Specimene
+
+-------------------------------------
+
+25.0 sec - Traseu
+
+-------------------------------------
+
+Total Times
+
+0.75 sec - pt a lua 3 sample-uri 
+1.00 sec - pt a lua 4 specimene
+2.50 sec - pt a pune 5 specimene
+0.75 sec - pt a se parca
+
+-------------------------------------
+
+Particular Times
+
+0.25 sec - pt a lua 1 sample
+0.25 sec - pt a lua 1 specimen
+0.50 sec - pt a pune 1 specimen
+
+-------------------------------------
+
+0.50 sec - Timp Ramas
+
+-------------------------------------
+
+Total: 29.50 / 30.00 sec
+
