@@ -13,11 +13,18 @@ public class RobotConfig {
     public static DcMotor backRightMotor;
 
     // Servo outtake
-    public static Servo outtakeClawServo;
-    public static Servo outtakeWristRollServo;
-    public static Servo outtakeWristPitchServo;
-    public static Servo outtakeElbowRightServo;
-    public static Servo outtakeElbowLeftServo;
+    public Servo outtakeClawServo;
+    public Servo outtakeWristRotServo;
+    public Servo outtakeWristYServo;
+    public Servo outtakeElbowRightServo;
+    public Servo outtakeElbowLeftServo;
+
+    // Servo intake
+    public Servo intakeElbowRightServo;
+    public Servo intakeElbowLeftServo;
+    public Servo intakeWristRightServo;
+    public Servo intakeWristLeftServo;
+    public Servo intakeWristServo;
 
     public RobotConfig(HardwareMap hardwareMap) {
         frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
@@ -25,11 +32,17 @@ public class RobotConfig {
         frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
         backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
 
-        outtakeClawServo = hardwareMap.servo.get("outtakeClawServo");
-        outtakeWristRollServo = hardwareMap.servo.get("outtakeWristRollServo");
-        outtakeWristPitchServo = hardwareMap.servo.get("outtakeWristPitchServo");
-        outtakeElbowRightServo = hardwareMap.servo.get("outtakeElbowRightServo");
-        outtakeElbowLeftServo = hardwareMap.servo.get("outtakeElbowLeftServo");
+        outtakeClawServo = hardwareMap.get(Servo.class, "outtakeClawServo");
+        outtakeWristRotServo = hardwareMap.get(Servo.class, "outtakeWristRotServo");
+        outtakeWristYServo = hardwareMap.get(Servo.class, "outtakeWristYServo");
+        outtakeElbowRightServo = hardwareMap.get(Servo.class, "outtakeElbowRightServo");
+        outtakeElbowLeftServo = hardwareMap.get(Servo.class, "outtakeElbowLeftServo");
+
+        intakeElbowRightServo = hardwareMap.get(Servo.class, "intakeElbowRightServo");
+        intakeElbowLeftServo = hardwareMap.get(Servo.class, "intakeElbowLeftServo");
+        intakeWristServo = hardwareMap.get(Servo.class, "intakeWristServo");
+        intakeWristRightServo = hardwareMap.get(Servo.class, "intakeWristRightServo");
+        intakeWristLeftServo = hardwareMap.get(Servo.class, "intakeWristLeftServo");
 
         // Setează direcțiile motoarelor
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -45,15 +58,28 @@ public class RobotConfig {
         backRightMotor.setPower(backRightPower);
     }
 
-    public void setOuttakeServoPositions(double clawServoPosition,
-                                         double wristRollServoPosition,
-                                         double wristPitchServoPosition,
-                                         double elbowRightServoPosition,
-                                         double elbowLeftServoPosition) {
-        outtakeClawServo.setPosition(clawServoPosition);
-        outtakeWristRollServo.setPosition(wristRollServoPosition);
-        outtakeWristPitchServo.setPosition(wristPitchServoPosition);
-        outtakeElbowRightServo.setPosition(elbowRightServoPosition);
-        outtakeElbowLeftServo.setPosition(elbowLeftServoPosition);
+    public void setServoPositions(double outtakeClawServoPosition,
+                                  double outtakeWristRotServoPosition,
+                                  double outtakeWristYServoPosition,
+                                  double outtakeElbowRightServoPosition,
+                                  double outtakeElbowLeftServoPosition) {
+        outtakeClawServo.setPosition(outtakeClawServoPosition);
+        outtakeWristRotServo.setPosition(outtakeWristRotServoPosition);
+        outtakeWristYServo.setPosition(outtakeWristYServoPosition);
+        outtakeElbowRightServo.setPosition(outtakeElbowRightServoPosition);
+        outtakeElbowLeftServo.setPosition(outtakeElbowLeftServoPosition);
     }
+
+    public void setIntakeServoPositions(double intakeElbowRightServoPosition,
+                                        double intakeElbowLeftServoPosition,
+                                        double intakeWristServoPosition,
+                                        double intakeWristRightServoPosition,
+                                        double intakeWristLeftServoPosition) {
+        intakeElbowRightServo.setPosition(intakeElbowRightServoPosition);
+        intakeElbowLeftServo.setPosition(intakeElbowLeftServoPosition);
+        intakeWristServo.setPosition(intakeWristServoPosition);
+        intakeWristRightServo.setPosition(intakeWristRightServoPosition);
+        intakeWristLeftServo.setPosition(intakeWristLeftServoPosition);
+    }
+
 }
