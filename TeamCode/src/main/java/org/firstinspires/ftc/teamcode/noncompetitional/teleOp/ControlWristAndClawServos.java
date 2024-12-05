@@ -6,93 +6,112 @@ import com.qualcomm.robotcore.hardware.Servo;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Servos", group = "Examples")
 public class ControlWristAndClawServos extends LinearOpMode {
 
-    private Servo wristYServo;    // Servo pentru mișcare pe axa Y (sus-jos)
-    private Servo wristRotServo; // Servo pentru rotație
-    private Servo clawServo;     // Servo pentru clește
-    private Servo elbowServo;
-    private Servo elbow2Servo;
+    private Servo clawServo; 
+    private Servo wristRotServo;
+    private Servo wristYServo;
+    private Servo elbowRightServo;
+    private Servo elbowLeftServo;
+    private Servo intakeElbowRightServo;
+    private Servo intakeElbowLeftServo;
+    private Servo intakeWristRightServo;
+    private Servo intakeWristLeftServo;
+    private Servo intakeWristServo;
 
     @Override
     public void runOpMode() {
-
-
-        // Inițializați hardware-ul
-        wristYServo = hardwareMap.get(Servo.class, "wristYServo");
-        wristRotServo = hardwareMap.get(Servo.class, "wristRotServo");
         clawServo = hardwareMap.get(Servo.class, "clawServo");
-        elbowServo = hardwareMap.get(Servo.class, "elbowServo");
-        elbow2Servo = hardwareMap.get(Servo.class, "elbow2Servo");
+        wristRotServo = hardwareMap.get(Servo.class, "wristRotServo");
+        wristYServo = hardwareMap.get(Servo.class, "wristYServo");
+        elbowRightServo = hardwareMap.get(Servo.class, "elbowRightServo");
+        elbowLeftServo = hardwareMap.get(Servo.class, "elbowLeftServo");
 
-        wristYServo.setPosition(1.0);
-        wristRotServo.setPosition(0.2046);
-        clawServo.setPosition(0.1);
-        elbowServo.setPosition(0.2451);
-        elbow2Servo.setPosition(0.44);
+        intakeElbowRightServo = hardwareMap.get(Servo.class, "intakeElbowRightServo");
+        intakeElbowLeftServo = hardwareMap.get(Servo.class, "intakeElbowLeftServo");
+        intakeWristServo = hardwareMap.get(Servo.class, "intakeWristServo");
+        intakeWristRightServo = hardwareMap.get(Servo.class, "intakeWristRightServo");
+        intakeWristLeftServo = hardwareMap.get(Servo.class, "intakeWristLeftServo");
 
-        // Așteptați pornirea
-        telemetry.addData("Status", "Waiting for start");
+
+        clawServo.setPosition(0.94);
+        wristRotServo.setPosition(0.909);
+        wristYServo.setPosition(0.0435);
+        elbowRightServo.setPosition(0.2451);
+        elbowLeftServo.setPosition(0.44);
+        
         telemetry.update();
         waitForStart();
 
         while (opModeIsActive()) { // claw
-            // Controlul servo-ului de mișcare pe axa Y (sus-jos)
             if (gamepad1.right_trigger > 0.1) {
-                wristYServo.setPosition(1.0); // Poziție maximă
-                telemetry.addData("Wrist Y Position", "1.0 (Up)");
+                clawServo.setPosition(0.94);
             } else if (gamepad1.left_trigger > 0.1) {
-                wristYServo.setPosition(0.55); // Poziție intermediară
-                telemetry.addData("Wrist Y Position", "0.5 (Mid)");
+                clawServo.setPosition(0.55); 
             }
 
-            // Controlul servo-ului de rotație
             if (gamepad1.dpad_down) { // rotServo
-                wristRotServo.setPosition(0.2046); // Rotație minimă  0.2046
-                telemetry.addData("Wrist Rotation Position", "0.0 (Min)");
+                wristRotServo.setPosition(0.2046); // 0 grade
             } else if (gamepad1.dpad_up) {
-                wristRotServo.setPosition(0.5527); // Rotație maximă  0.5527
-                telemetry.addData("Wrist Rotation Position", "1.0 (Max)");
+                wristRotServo.setPosition(0.5527); // 90 grade
             } else if (gamepad1.dpad_left) {
-                wristRotServo.setPosition(0.909); // Rotație înapoi la zero  /0.909
-                telemetry.addData("Wrist Rotation Position", "0.0 (Zero)");
+                wristRotServo.setPosition(0.909); // 180 grade
             }
 
-
-            // Controlul servo-ului de clește (claw)
             if (gamepad1.a) { // YServo
-                clawServo.setPosition(0.0); // Clește închis
-                telemetry.addData("Claw Position", "0.0 (Closed)");
+                wristYServo.setPosition(0.0435); // pt transfer
             } else if (gamepad1.y) {
-                clawServo.setPosition(0.1); // Clește deschis`
-                telemetry.addData("Claw Position", "1.0 (Open)");
+                wristYServo.setPosition(0.1207); // pt punere specimene
             }
 
             if(gamepad1.right_bumper){
-                elbow2Servo.setPosition(0.44);
-                elbowServo.setPosition(0.2451);
-                telemetry.addData("Elbow Position", "0.0 (Open)");
+                elbowRightServo.setPosition(0.2451); // ia specimen
+                elbowLeftServo.setPosition(0.44);
             }
             else if(gamepad1.left_bumper){
-                elbow2Servo.setPosition(1.0);
-                elbowServo.setPosition(0.8051);
-                telemetry.addData("Elbow Position", "1.0 (Closed)");
+                elbowRightServo.setPosition(0.8051); //pune specimen
+                elbowLeftServo.setPosition(1.0);
             }
 
-            if(gamepad1.right_stick_button){
-                wristYServo.setPosition(1.0);
+            if(gamepad1.right_stick_button){ //luat specimene
+                clawServo.setPosition(0.94);
                 wristRotServo.setPosition(0.909);
-                clawServo.setPosition(0.1);
-                elbowServo.setPosition(0.2451);
-                elbow2Servo.setPosition(0.44);
+                wristYServo.setPosition(0.0435);
+                elbowRightServo.setPosition(0.2451);
+                elbowLeftServo.setPosition(0.44);
             }
-            else if(gamepad1.left_stick_button){
-                wristYServo.setPosition(1.0);
+            else if(gamepad1.left_stick_button){ //punere specimene
+                clawServo.setPosition(0.94);
                 wristRotServo.setPosition(0.2046);
-                clawServo.setPosition(0.0);
-                elbowServo.setPosition(0.8051);
-                elbow2Servo.setPosition(1.0);
+                wristYServo.setPosition(0.1207);
+                elbowRightServo.setPosition(0.8051);
+                elbowLeftServo.setPosition(1.0);
             }
 
-            // Afișează informații pe Driver Station
+            if(gamepad2.dpad_down){
+                intakeElbowRightServo.setPosition(0.0);
+                intakeElbowLeftServo.setPosition(0.5454);
+
+            }
+            else if(gamepad2.dpad_up){
+                intakeElbowRightServo.setPosition(0.5454);
+                intakeElbowLeftServo.setPosition(0.0);
+            }
+
+            if(gamepad2.a){
+                intakeWristRightServo.setPosition(0.0);
+                intakeWristLeftServo.setPosition(1.0);
+            }
+            else if(gamepad2.y){
+                intakeWristRightServo.setPosition(1.0);
+                intakeWristLeftServo.setPosition(0.0);
+            }
+
+            if(gamepad2.right_bumper){
+                intakeWristServo.setPosition(0.0);
+            }
+            else if(gamepad2.left_bumper){
+                intakeWristServo.setPosition(1.0);
+            }
+
             telemetry.update();
         }
     }
