@@ -58,7 +58,7 @@ public class RobotConfig {
         backRightMotor.setPower(backRightPower);
     }
 
-    public void setServoPositions(double outtakeClawServoPosition,
+    public void setOuttakeServoPositions(double outtakeClawServoPosition,
                                   double outtakeWristRotServoPosition,
                                   double outtakeWristYServoPosition,
                                   double outtakeElbowRightServoPosition,
