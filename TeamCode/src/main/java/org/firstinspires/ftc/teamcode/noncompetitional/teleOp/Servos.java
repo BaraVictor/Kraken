@@ -11,8 +11,8 @@ import java.util.Map;
 public class Servos extends LinearOpMode {
 
     private RobotConfig robotConfig;
-    boolean clawClosed = true;
-    final long TRIGGER_DELAY_MS = 500;
+    boolean outtakeClawClosed = true;
+    boolean intakeClawClosed = true;
 
     @Override
     public void runOpMode() {
@@ -32,7 +32,9 @@ public class Servos extends LinearOpMode {
                 ServoConstants.INTAKE_ELBOW_LEFT_DOWN,
                 ServoConstants.INTAKE_WRIST_UP,
                 ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
-                ServoConstants.INTAKE_WRIST_LEFT_POSITION
+                ServoConstants.INTAKE_WRIST_LEFT_POSITION,
+                ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
         );
 
         telemetry.addData("Status", "Initialized");
@@ -47,29 +49,29 @@ public class Servos extends LinearOpMode {
         }
     }
 
-    private final Map<String, Long> triggerTimers = new HashMap<>();
+    private final Map<String, Long> triggerTimersOuttakeClaw = new HashMap<>();
+    private final Map<String, Long> triggerTimersIntakeClaw = new HashMap<>();
 
     private void controlOuttakeServos() {
-        final long TRIGGER_DELAY_MS = 500;
-        long currentTime = System.currentTimeMillis();
+        final long TRIGGER_DELAY_MS_OUTTAKECLAW = 500;
+        long currentTimeOuttakeClow = System.currentTimeMillis();
 
         // Obținem timpul ultimei acționări a ghearei
-        long lastTriggerTime = triggerTimers.getOrDefault("outtakeClaw", 0L);
+        long lastTriggerTimeClawServo = triggerTimersOuttakeClaw.getOrDefault("outtakeClaw", 0L);
 
         // Claw control
-        if (gamepad1.left_trigger > 0.1 && (currentTime - lastTriggerTime > TRIGGER_DELAY_MS)) {
-            if (clawClosed) {
+        if (gamepad1.left_trigger > 0.1 && (currentTimeOuttakeClow - lastTriggerTimeClawServo > TRIGGER_DELAY_MS_OUTTAKECLAW)) {
+            if (outtakeClawClosed) {
                 robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
-                clawClosed = false;
+                outtakeClawClosed = false;
             } else {
                 robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
-                clawClosed = true;
+                outtakeClawClosed = true;
             }
             // Actualizăm timpul ultimei acționări
-            triggerTimers.put("outtakeClaw", currentTime);
+            triggerTimersOuttakeClaw.put("outtakeClaw", currentTimeOuttakeClow);
         }
-
-
+        
 /*
         // Wrist rotation control
         if (gamepad1.dpad_down) {
@@ -118,6 +120,30 @@ public class Servos extends LinearOpMode {
     }
 
     private void controlIntakeServos() {
+        final long TRIGGER_DELAY_MS_INTAKECLAW = 500;  // Delay pentru gheara de intake
+        long currentTime = System.currentTimeMillis();
+
+        // Obținem timpul ultimei acționări a ghearei de intake
+        long lastTriggerTimeIntakeClaw = triggerTimersIntakeClaw.getOrDefault("intakeClaw", 0L);
+
+        // Control pentru gheara de intake
+        if (gamepad1.right_trigger > 0.1 && (currentTime - lastTriggerTimeIntakeClaw > TRIGGER_DELAY_MS_INTAKECLAW)) {
+            if (intakeClawClosed) {
+                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_OPEN_POSITION);
+                intakeClawClosed = false;
+            } else {
+                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
+                intakeClawClosed = true;
+            }
+            // Actualizăm timpul ultimei acționări a ghearei de intake
+            triggerTimersIntakeClaw.put("intakeClaw", currentTime);
+        }
+
+        if (gamepad1.b){
+            robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_90_DEGREES);
+        } else if (gamepad1.x){
+            robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+        }
         /*
         // Intake elbow control
         if (gamepad2.dpad_down) {
@@ -150,7 +176,9 @@ public class Servos extends LinearOpMode {
                     ServoConstants.INTAKE_ELBOW_LEFT_UP,
                     ServoConstants.INTAKE_WRIST_UP,
                     ServoConstants.INTAKE_WRIST_RIGHT_REVERSED_POSITION,
-                    ServoConstants.INTAKE_WRIST_LEFT_REVERSED_POSITION
+                    ServoConstants.INTAKE_WRIST_LEFT_REVERSED_POSITION,
+                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
             );
         } else if (gamepad1.a) { // Întinderea
             robotConfig.setIntakeServoPositions(
@@ -158,9 +186,10 @@ public class Servos extends LinearOpMode {
                     ServoConstants.INTAKE_ELBOW_LEFT_DOWN,
                     ServoConstants.INTAKE_WRIST_UP,
                     ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
-                    ServoConstants.INTAKE_WRIST_LEFT_POSITION
+                    ServoConstants.INTAKE_WRIST_LEFT_POSITION,
+                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
             );
         }
-
     }
 }

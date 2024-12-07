@@ -35,4 +35,12 @@ public class ServoConstants {
     // Intake Wrist Servo (Single) Positions
     public static final double INTAKE_WRIST_DOWN = 0.0;
     public static final double INTAKE_WRIST_UP = 1.0;
+
+    // Intake Claw Servo Positions
+    public static final double INTAKE_CLAW_OPEN_POSITION = 0.3;
+    public static final double INTAKE_CLAW_CLOSED_POSITION = 0.78;
+
+    // Intake Wrist Rotation Servo Positions
+    public static final double INTAKE_WRIST_ROT_0_DEGREES = 0.4031;
+    public static final double INTAKE_WRIST_ROT_90_DEGREES = 0.9515;
 }

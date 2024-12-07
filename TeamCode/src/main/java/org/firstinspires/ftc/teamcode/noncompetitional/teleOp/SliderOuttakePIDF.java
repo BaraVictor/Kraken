@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.noncompetitional.teleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 
 @TeleOp(name = "Slider Control with PIDF", group = "TeleOp")
-public class SliderOutakePIDF extends OpMode {
+public class SliderOuttakePIDF extends OpMode {
 
     private DcMotorEx sliderMotor1;
     private DcMotorEx sliderMotor2;

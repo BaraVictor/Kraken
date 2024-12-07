@@ -25,6 +25,8 @@ public class RobotConfig {
     public Servo intakeWristRightServo;
     public Servo intakeWristLeftServo;
     public Servo intakeWristServo;
+    public Servo intakeWristRotServo;
+    public Servo intakeClawServo;
 
     public RobotConfig(HardwareMap hardwareMap) {
         frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
@@ -43,6 +45,8 @@ public class RobotConfig {
         intakeWristServo = hardwareMap.get(Servo.class, "intakeWristServo");
         intakeWristRightServo = hardwareMap.get(Servo.class, "intakeWristRightServo");
         intakeWristLeftServo = hardwareMap.get(Servo.class, "intakeWristLeftServo");
+        intakeClawServo = hardwareMap.get(Servo.class, "intakeClawServo");
+        intakeWristRotServo = hardwareMap.get(Servo.class, "intakeWristRotServo");
 
         // Setează direcțiile motoarelor
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -74,12 +78,16 @@ public class RobotConfig {
                                         double intakeElbowLeftServoPosition,
                                         double intakeWristServoPosition,
                                         double intakeWristRightServoPosition,
-                                        double intakeWristLeftServoPosition) {
+                                        double intakeWristLeftServoPosition,
+                                        double intakeClawServoPosition,
+                                        double intakeWristRotServoPosition) {
         intakeElbowRightServo.setPosition(intakeElbowRightServoPosition);
         intakeElbowLeftServo.setPosition(intakeElbowLeftServoPosition);
         intakeWristServo.setPosition(intakeWristServoPosition);
         intakeWristRightServo.setPosition(intakeWristRightServoPosition);
         intakeWristLeftServo.setPosition(intakeWristLeftServoPosition);
+        intakeClawServo.setPosition(intakeClawServoPosition);
+        intakeWristRotServo.setPosition(intakeWristRotServoPosition);
     }
 
 }
