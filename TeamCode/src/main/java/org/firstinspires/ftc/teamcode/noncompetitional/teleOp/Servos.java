@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.noncompetitional.teleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import org.firstinspires.ftc.teamcode.constants.ServoConstants;
+
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
+import org.firstinspires.ftc.teamcode.constants.ServoConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,15 +12,184 @@ import java.util.Map;
 public class Servos extends LinearOpMode {
 
     private RobotConfig robotConfig;
-    boolean outtakeClawClosed = true;
-    boolean intakeClawClosed = true;
+    private boolean outtakeClawClosed = true;
+    private boolean intakeClawClosed = true;
+
+    // Timers pentru controlul claw-urilor
+    private final Map<String, Long> triggerTimersOuttakeClaw = new HashMap<>();
+    private final Map<String, Long> triggerTimersIntakeClaw = new HashMap<>();
+
+    // Enum pentru stările Outtake
+    private enum OuttakeState {
+        INIT,
+        PICKUP,
+        PLACE_SAMPLE,
+        PLACE_SPECIMEN
+    }
+
+    private OuttakeState currentOuttakeState = OuttakeState.INIT;
+
+    // Enum pentru stările Intake :0
+    private enum IntakeState {
+        INIT,
+        PICKUP,
+        TRANSFER
+    }
+
+    private IntakeState currentIntakeState = IntakeState.INIT;
 
     @Override
     public void runOpMode() {
-        // Inițializarea configurației hardware
         robotConfig = new RobotConfig(hardwareMap);
 
-        // Setarea pozițiilor inițiale ale servomotoarelor
+        resetServosToInit();
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
+        waitForStart();
+
+        while (opModeIsActive()) {
+            controlOuttakeState();
+            controlIntakeState();
+            controlOuttakeClawServo();
+            controlIntakeClawServo();
+
+            if (gamepad1.right_stick_button) {
+                resetServosToInit();
+            }
+
+            telemetry.addData("Outtake State", currentOuttakeState);
+            telemetry.addData("Intake State", currentIntakeState);
+            telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
+            telemetry.addData("Intake Claw Closed", intakeClawClosed);
+            telemetry.update();
+        }
+    }
+
+    private void controlOuttakeState() {
+        if (gamepad1.dpad_up) {
+            setOuttakeState(OuttakeState.PICKUP);
+        } else if (gamepad1.dpad_left) {
+            setOuttakeState(OuttakeState.PLACE_SAMPLE);
+        } else if (gamepad1.dpad_right) {
+            setOuttakeState(OuttakeState.PLACE_SPECIMEN);
+        }
+
+        switch (currentOuttakeState) {
+            case PICKUP:
+                robotConfig.setOuttakeServoPositions(
+                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                        ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+                );
+                break;
+            case PLACE_SAMPLE:
+                robotConfig.setOuttakeServoPositions(
+                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.OUTTAKE_WRIST_ROT_90_DEGREES,
+                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_POSITION
+                );
+                break;
+            case PLACE_SPECIMEN:
+                robotConfig.setOuttakeServoPositions(
+                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
+                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_POSITION
+                );
+                break;
+            default:
+                resetServosToInit();
+                break;
+        }
+    }
+
+    private void controlIntakeState() {
+        if (gamepad1.a) {
+            setIntakeState(IntakeState.PICKUP);
+        } else if (gamepad1.b) {
+            setIntakeState(IntakeState.TRANSFER);
+        }
+
+        switch (currentIntakeState) {
+            case PICKUP:
+                robotConfig.setIntakeServoPositions(
+                        ServoConstants.INTAKE_ELBOW_RIGHT_DOWN,
+                        ServoConstants.INTAKE_ELBOW_LEFT_DOWN,
+                        ServoConstants.INTAKE_WRIST_UP,
+                        ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
+                        ServoConstants.INTAKE_WRIST_LEFT_POSITION,
+                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                );
+                break;
+            case TRANSFER:
+                robotConfig.setIntakeServoPositions(
+                        ServoConstants.INTAKE_ELBOW_RIGHT_UP,
+                        ServoConstants.INTAKE_ELBOW_LEFT_UP,
+                        ServoConstants.INTAKE_WRIST_UP,
+                        ServoConstants.INTAKE_WRIST_RIGHT_REVERSED_POSITION,
+                        ServoConstants.INTAKE_WRIST_LEFT_REVERSED_POSITION,
+                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
+                );
+                break;
+            default:
+                resetServosToInit();
+                break;
+        }
+    }
+
+    private void controlOuttakeClawServo() {
+        final long TRIGGER_DELAY_MS_OUTTAKECLAW = 500;
+        long currentTimeOuttakeClaw = System.currentTimeMillis();
+
+        long lastTriggerTimeClawServo = triggerTimersOuttakeClaw.getOrDefault("outtakeClaw", 0L);
+
+        if (gamepad1.left_trigger > 0.1 && (currentTimeOuttakeClaw - lastTriggerTimeClawServo > TRIGGER_DELAY_MS_OUTTAKECLAW)) {
+            if (outtakeClawClosed) {
+                robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
+                outtakeClawClosed = false;
+            } else {
+                robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
+                outtakeClawClosed = true;
+            }
+            triggerTimersOuttakeClaw.put("outtakeClaw", currentTimeOuttakeClaw);
+        }
+    }
+
+    private void controlIntakeClawServo() {
+        final long TRIGGER_DELAY_MS_INTAKECLAW = 500;
+        long currentTime = System.currentTimeMillis();
+
+        long lastTriggerTimeIntakeClaw = triggerTimersIntakeClaw.getOrDefault("intakeClaw", 0L);
+
+        if (gamepad1.right_trigger > 0.1 && (currentTime - lastTriggerTimeIntakeClaw > TRIGGER_DELAY_MS_INTAKECLAW)) {
+            if (intakeClawClosed) {
+                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_OPEN_POSITION);
+                intakeClawClosed = false;
+            } else {
+                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
+                intakeClawClosed = true;
+            }
+            triggerTimersIntakeClaw.put("intakeClaw", currentTime);
+        }
+    }
+
+    private void setOuttakeState(OuttakeState state) {
+        currentOuttakeState = state;
+    }
+
+    private void setIntakeState(IntakeState state) {
+        currentIntakeState = state;
+    }
+
+    private void resetServosToInit() {
         robotConfig.setOuttakeServoPositions(
                 ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
                 ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -36,160 +206,7 @@ public class Servos extends LinearOpMode {
                 ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                 ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
         );
-
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
-        waitForStart();
-
-        while (opModeIsActive()) {
-            controlOuttakeServos();
-            controlIntakeServos();
-
-            telemetry.update();
-        }
-    }
-
-    private final Map<String, Long> triggerTimersOuttakeClaw = new HashMap<>();
-    private final Map<String, Long> triggerTimersIntakeClaw = new HashMap<>();
-
-    private void controlOuttakeServos() {
-        final long TRIGGER_DELAY_MS_OUTTAKECLAW = 500;
-        long currentTimeOuttakeClow = System.currentTimeMillis();
-
-        // Obținem timpul ultimei acționări a ghearei
-        long lastTriggerTimeClawServo = triggerTimersOuttakeClaw.getOrDefault("outtakeClaw", 0L);
-
-        // Claw control
-        if (gamepad1.left_trigger > 0.1 && (currentTimeOuttakeClow - lastTriggerTimeClawServo > TRIGGER_DELAY_MS_OUTTAKECLAW)) {
-            if (outtakeClawClosed) {
-                robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
-                outtakeClawClosed = false;
-            } else {
-                robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
-                outtakeClawClosed = true;
-            }
-            // Actualizăm timpul ultimei acționări
-            triggerTimersOuttakeClaw.put("outtakeClaw", currentTimeOuttakeClow);
-        }
-        
-/*
-        // Wrist rotation control
-        if (gamepad1.dpad_down) {
-            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES);
-        } else if (gamepad1.dpad_up) {
-            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_90_DEGREES);
-        } else if (gamepad1.dpad_left) {
-            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
-        }
-
-        // Wrist Y control
-        if (gamepad1.a) {
-            robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION);
-        } else if (gamepad1.y) {
-            robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
-        }
-
-        // Elbow control
-        if (gamepad1.right_bumper) {
-            robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
-            robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
-        } else if (gamepad1.left_bumper) {
-            robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_POSITION);
-            robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_POSITION);
-        }
-*/
-
-        // Preset positions
-        if (gamepad1.dpad_up) {
-            robotConfig.setOuttakeServoPositions(
-                    ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                    ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                    ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
-                    ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
-                    ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
-            );
-        } else if (gamepad1.dpad_down) {
-            robotConfig.setOuttakeServoPositions(
-                    ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                    ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
-                    ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                    ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_POSITION,
-                    ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_POSITION
-            );
-        }
-    }
-
-    private void controlIntakeServos() {
-        final long TRIGGER_DELAY_MS_INTAKECLAW = 500;  // Delay pentru gheara de intake
-        long currentTime = System.currentTimeMillis();
-
-        // Obținem timpul ultimei acționări a ghearei de intake
-        long lastTriggerTimeIntakeClaw = triggerTimersIntakeClaw.getOrDefault("intakeClaw", 0L);
-
-        // Control pentru gheara de intake
-        if (gamepad1.right_trigger > 0.1 && (currentTime - lastTriggerTimeIntakeClaw > TRIGGER_DELAY_MS_INTAKECLAW)) {
-            if (intakeClawClosed) {
-                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_OPEN_POSITION);
-                intakeClawClosed = false;
-            } else {
-                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
-                intakeClawClosed = true;
-            }
-            // Actualizăm timpul ultimei acționări a ghearei de intake
-            triggerTimersIntakeClaw.put("intakeClaw", currentTime);
-        }
-
-        if (gamepad1.b){
-            robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_90_DEGREES);
-        } else if (gamepad1.x){
-            robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
-        }
-        /*
-        // Intake elbow control
-        if (gamepad2.dpad_down) {
-            robotConfig.intakeElbowRightServo.setPosition(ServoConstants.INTAKE_ELBOW_RIGHT_DOWN);
-            robotConfig.intakeElbowLeftServo.setPosition(ServoConstants.INTAKE_ELBOW_LEFT_DOWN);
-        } else if (gamepad2.dpad_up) {
-            robotConfig.intakeElbowRightServo.setPosition(ServoConstants.INTAKE_ELBOW_RIGHT_UP);
-            robotConfig.intakeElbowLeftServo.setPosition(ServoConstants.INTAKE_ELBOW_LEFT_UP);
-        }
-
-        // Intake wrist control
-        if (gamepad2.a) {
-            robotConfig.intakeWristRightServo.setPosition(ServoConstants.INTAKE_WRIST_RIGHT_POSITION);
-            robotConfig.intakeWristLeftServo.setPosition(ServoConstants.INTAKE_WRIST_LEFT_POSITION);
-        } else if (gamepad2.y) {
-            robotConfig.intakeWristRightServo.setPosition(ServoConstants.INTAKE_WRIST_RIGHT_REVERSED_POSITION);
-            robotConfig.intakeWristLeftServo.setPosition(ServoConstants.INTAKE_WRIST_LEFT_REVERSED_POSITION);
-        }
-
-        if (gamepad2.right_bumper) {
-            robotConfig.intakeWristServo.setPosition(ServoConstants.INTAKE_WRIST_DOWN);
-        } else if (gamepad2.left_bumper) {
-            robotConfig.intakeWristServo.setPosition(ServoConstants.INTAKE_WRIST_UP);
-        }
-        */
-
-        if (gamepad1.y) { // Retragerea
-            robotConfig.setIntakeServoPositions(
-                    ServoConstants.INTAKE_ELBOW_RIGHT_UP,
-                    ServoConstants.INTAKE_ELBOW_LEFT_UP,
-                    ServoConstants.INTAKE_WRIST_UP,
-                    ServoConstants.INTAKE_WRIST_RIGHT_REVERSED_POSITION,
-                    ServoConstants.INTAKE_WRIST_LEFT_REVERSED_POSITION,
-                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-            );
-        } else if (gamepad1.a) { // Întinderea
-            robotConfig.setIntakeServoPositions(
-                    ServoConstants.INTAKE_ELBOW_RIGHT_DOWN,
-                    ServoConstants.INTAKE_ELBOW_LEFT_DOWN,
-                    ServoConstants.INTAKE_WRIST_UP,
-                    ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
-                    ServoConstants.INTAKE_WRIST_LEFT_POSITION,
-                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-            );
-        }
+        currentOuttakeState = OuttakeState.INIT;
+        currentIntakeState = IntakeState.INIT;
     }
 }
