@@ -21,16 +21,17 @@ public class OuttakeSliders extends OpMode {
 
     // Limits for the target position
     private static final int MIN_POSITION = 0;       // Minimum position in encoder units
-    private static final int MAX_POSITION = 3000;    // Maximum position in encoder units
+    private static final int MAX_POSITION = 3990;    // Maximum position in encoder units
     private static final int TOLERANCE = 10;        // Tolerance to stop the motor (in encoder ticks)
 
     private FtcDashboard dashboard;  // Instance of the Dashboard
 
     // PIDF Coefficients adjustable via the FTC Dashboard
-    public static double P = 0.07;
-    public static double I = 0.005;
-    public static double D = 0.01;
-    public static double F = 0.001;
+    public static double P = 0;
+    public static double I = 0.0;
+    public static double D = 0;
+    public static double F = 0;
+    public static double K =0;
 
     public static double targetPosition = 0;  // This will be adjustable via Dashboard
 
@@ -74,8 +75,8 @@ public class OuttakeSliders extends OpMode {
         pidfControllerRight.updatePosition(rightMotor.getCurrentPosition());
 
         // Calculate motor power using PIDF output
-        double powerLeft = pidfControllerLeft.runPIDF();
-        double powerRight = pidfControllerRight.runPIDF();
+        double powerLeft = pidfControllerLeft.runPIDF() + K;
+        double powerRight = pidfControllerRight.runPIDF() + K;
 
         // Stop motors if they are within tolerance of the target position
         if (Math.abs(leftMotor.getCurrentPosition() - targetPosition) <= TOLERANCE) {

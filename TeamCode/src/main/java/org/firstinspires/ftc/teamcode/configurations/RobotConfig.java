@@ -52,7 +52,7 @@ public class RobotConfig {
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotor.Direction.FORWARD);
     }
 
     public void setMotorPowers(double frontLeftPower, double backLeftPower, double frontRightPower, double backRightPower) {

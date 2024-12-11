@@ -14,6 +14,7 @@ public class Servos extends LinearOpMode {
     private RobotConfig robotConfig;
     private boolean outtakeClawClosed = true;
     private boolean intakeClawClosed = true;
+    private boolean rot0 = true;
 
     // Timers pentru controlul claw-urilor
     private final Map<String, Long> triggerTimersOuttakeClaw = new HashMap<>();
@@ -21,26 +22,30 @@ public class Servos extends LinearOpMode {
 
     // Enum pentru stările Outtake
     private enum OuttakeState {
+        START,
         INIT,
         PICKUP,
         PLACE_SAMPLE,
         PLACE_SPECIMEN
     }
 
-    private OuttakeState currentOuttakeState = OuttakeState.INIT;
+    private OuttakeState currentOuttakeState = OuttakeState.START;
 
-    // Enum pentru stările Intake :0
+    // Enum pentru stările Intake
     private enum IntakeState {
+        START,
         INIT,
+        LIFT_EXTEND,
         PICKUP,
-        TRANSFER
+        TRANSFER,
+        RETRACT
     }
-
-    private IntakeState currentIntakeState = IntakeState.INIT;
+    private IntakeState currentIntakeState = IntakeState.START;
 
     @Override
     public void runOpMode() {
         robotConfig = new RobotConfig(hardwareMap);
+
 
         resetServosToInit();
 
@@ -57,6 +62,20 @@ public class Servos extends LinearOpMode {
             if (gamepad1.right_stick_button) {
                 resetServosToInit();
             }
+            // Add telemetry for motor and servo positions
+            telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
+            telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
+            telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
+            telemetry.addData("Outtake Elbow Right Position", robotConfig.outtakeElbowRightServo.getPosition());
+            telemetry.addData("Outtake Elbow Left Position", robotConfig.outtakeElbowLeftServo.getPosition());
+
+            telemetry.addData("Intake Elbow Right Position", robotConfig.intakeElbowRightServo.getPosition());
+            telemetry.addData("Intake Elbow Left Position", robotConfig.intakeElbowLeftServo.getPosition());
+            telemetry.addData("Intake Wrist Position", robotConfig.intakeWristServo.getPosition());
+            telemetry.addData("Intake Wrist Right Position", robotConfig.intakeWristRightServo.getPosition());
+            telemetry.addData("Intake Wrist Left Position", robotConfig.intakeWristLeftServo.getPosition());
+            telemetry.addData("Intake Claw Position", robotConfig.intakeClawServo.getPosition());
+            telemetry.addData("Intake Wrist Rot Position", robotConfig.intakeWristRotServo.getPosition());
 
             telemetry.addData("Outtake State", currentOuttakeState);
             telemetry.addData("Intake State", currentIntakeState);
@@ -76,6 +95,18 @@ public class Servos extends LinearOpMode {
         }
 
         switch (currentOuttakeState) {
+            case START:
+                if(gamepad1.dpad_down) {
+                    robotConfig.setOuttakeServoPositions(
+                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                            ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+                    );
+                    currentIntakeState = IntakeState.LIFT_EXTEND;
+                }
+                break;
             case PICKUP:
                 robotConfig.setOuttakeServoPositions(
                         ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
@@ -110,38 +141,91 @@ public class Servos extends LinearOpMode {
     }
 
     private void controlIntakeState() {
-        if (gamepad1.a) {
-            setIntakeState(IntakeState.PICKUP);
-        } else if (gamepad1.b) {
-            setIntakeState(IntakeState.TRANSFER);
-        }
-
         switch (currentIntakeState) {
+            case START:
+                if(gamepad1.a) {
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_WRIST_DOWN,
+                            ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                    );
+                    currentIntakeState = IntakeState.LIFT_EXTEND;
+                }
+                break;
+            case LIFT_EXTEND:
+                if (ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0.1727) {
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_WRIST_DOWN,
+                            ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                    );
+                    currentIntakeState = IntakeState.PICKUP;
+                }
+                break;
             case PICKUP:
+                if(gamepad1.b){
+                    robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+                    rot0 = true;
+                }
+                else if (gamepad1.x){
+                    robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_90_DEGREES);
+                    rot0 = false;
+                }
+                if(gamepad1.right_trigger>0.1 && rot0 == true){
+                    robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
+                    sleep(50);
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_WRIST_UP,
+                            ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                    );
+                    currentIntakeState = IntakeState.RETRACT;
+                }
+                else if(gamepad1.right_trigger>0.1 && rot0 == false) {
+                    robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
+                    sleep(50);
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_WRIST_UP,
+                            ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                    );
+                    currentIntakeState = IntakeState.RETRACT;
+                }
+                break;
+            case RETRACT:
                 robotConfig.setIntakeServoPositions(
-                        ServoConstants.INTAKE_ELBOW_RIGHT_DOWN,
-                        ServoConstants.INTAKE_ELBOW_LEFT_DOWN,
+                        ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                        ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
                         ServoConstants.INTAKE_WRIST_UP,
-                        ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
-                        ServoConstants.INTAKE_WRIST_LEFT_POSITION,
+                        ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                        ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
                         ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                         ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                 );
-                break;
-            case TRANSFER:
-                robotConfig.setIntakeServoPositions(
-                        ServoConstants.INTAKE_ELBOW_RIGHT_UP,
-                        ServoConstants.INTAKE_ELBOW_LEFT_UP,
-                        ServoConstants.INTAKE_WRIST_UP,
-                        ServoConstants.INTAKE_WRIST_RIGHT_REVERSED_POSITION,
-                        ServoConstants.INTAKE_WRIST_LEFT_REVERSED_POSITION,
-                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                        ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
-                );
+                currentIntakeState = IntakeState.START;
                 break;
             default:
-                resetServosToInit();
-                break;
+                currentIntakeState = IntakeState.START;
+            break;
+        }
+        if (gamepad1.left_stick_button && currentIntakeState != IntakeState.START) {
+            currentIntakeState = IntakeState.START;
         }
     }
 
@@ -192,21 +276,19 @@ public class Servos extends LinearOpMode {
     private void resetServosToInit() {
         robotConfig.setOuttakeServoPositions(
                 ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+               ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
                 ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
                 ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
                 ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
         );
         robotConfig.setIntakeServoPositions(
-                ServoConstants.INTAKE_ELBOW_RIGHT_DOWN,
-                ServoConstants.INTAKE_ELBOW_LEFT_DOWN,
+                ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
                 ServoConstants.INTAKE_WRIST_UP,
-                ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
-                ServoConstants.INTAKE_WRIST_LEFT_POSITION,
+                ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
                 ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                 ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
         );
-        currentOuttakeState = OuttakeState.INIT;
-        currentIntakeState = IntakeState.INIT;
     }
 }

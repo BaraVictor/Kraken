@@ -20,22 +20,22 @@ public class Servo extends LinearOpMode {
         robotConfig = new RobotConfig(hardwareMap);
 
         // Setarea pozițiilor inițiale ale servomotoarelor
-        robotConfig.setOuttakeServoPositions(
-                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
-                ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
-                ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
-        );
-        robotConfig.setIntakeServoPositions(
-                ServoConstants.INTAKE_ELBOW_RIGHT_DOWN,
-                ServoConstants.INTAKE_ELBOW_LEFT_DOWN,
-                ServoConstants.INTAKE_WRIST_UP,
-                ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
-                ServoConstants.INTAKE_WRIST_LEFT_POSITION,
-                ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-        );
+//        robotConfig.setOuttakeServoPositions(
+//                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+//                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+//                ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+//                ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+//                ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+//        );
+//        robotConfig.setIntakeServoPositions(
+//                ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+//                ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+//                ServoConstants.INTAKE_WRIST_UP,
+//                ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
+//                ServoConstants.INTAKE_WRIST_LEFT_POSITION,
+//                ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+//                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+//        );
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -147,11 +147,11 @@ public class Servo extends LinearOpMode {
         /*
         // Intake elbow control
         if (gamepad2.dpad_down) {
-            robotConfig.intakeElbowRightServo.setPosition(ServoConstants.INTAKE_ELBOW_RIGHT_DOWN);
-            robotConfig.intakeElbowLeftServo.setPosition(ServoConstants.INTAKE_ELBOW_LEFT_DOWN);
+            robotConfig.intakeElbowRightServo.setPosition(ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION);
+            robotConfig.intakeElbowLeftServo.setPosition(ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION);
         } else if (gamepad2.dpad_up) {
-            robotConfig.intakeElbowRightServo.setPosition(ServoConstants.INTAKE_ELBOW_RIGHT_UP);
-            robotConfig.intakeElbowLeftServo.setPosition(ServoConstants.INTAKE_ELBOW_LEFT_UP);
+            robotConfig.intakeElbowRightServo.setPosition(ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION);
+            robotConfig.intakeElbowLeftServo.setPosition(ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION);
         }
 
         // Intake wrist control
@@ -170,26 +170,26 @@ public class Servo extends LinearOpMode {
         }
         */
 
-        if (gamepad1.y) { // Retragerea
-            robotConfig.setIntakeServoPositions(
-                    ServoConstants.INTAKE_ELBOW_RIGHT_UP,
-                    ServoConstants.INTAKE_ELBOW_LEFT_UP,
-                    ServoConstants.INTAKE_WRIST_UP,
-                    ServoConstants.INTAKE_WRIST_RIGHT_REVERSED_POSITION,
-                    ServoConstants.INTAKE_WRIST_LEFT_REVERSED_POSITION,
-                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-            );
-        } else if (gamepad1.a) { // Întinderea
-            robotConfig.setIntakeServoPositions(
-                    ServoConstants.INTAKE_ELBOW_RIGHT_DOWN,
-                    ServoConstants.INTAKE_ELBOW_LEFT_DOWN,
-                    ServoConstants.INTAKE_WRIST_UP,
-                    ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
-                    ServoConstants.INTAKE_WRIST_LEFT_POSITION,
-                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-            );
-        }
+//        if (gamepad1.y) { // Retragerea
+//            robotConfig.setIntakeServoPositions(
+//                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+//                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+//                    ServoConstants.INTAKE_WRIST_UP,
+//                    ServoConstants.INTAKE_WRIST_RIGHT_REVERSED_POSITION,
+//                    ServoConstants.INTAKE_WRIST_LEFT_REVERSED_POSITION,
+//                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+//                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+//            );
+//        } else if (gamepad1.a) { // Întinderea
+//            robotConfig.setIntakeServoPositions(
+//                    ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+//                    ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+//                    ServoConstants.INTAKE_WRIST_UP,
+//                    ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
+//                    ServoConstants.INTAKE_WRIST_LEFT_POSITION,
+//                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+//                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+//            );
+//        }
     }
 }
