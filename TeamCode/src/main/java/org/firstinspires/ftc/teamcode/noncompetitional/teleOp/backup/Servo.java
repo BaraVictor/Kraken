@@ -19,23 +19,6 @@ public class Servo extends LinearOpMode {
         // Inițializarea configurației hardware
         robotConfig = new RobotConfig(hardwareMap);
 
-        // Setarea pozițiilor inițiale ale servomotoarelor
-//        robotConfig.setOuttakeServoPositions(
-//                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-//                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-//                ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
-//                ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
-//                ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
-//        );
-//        robotConfig.setIntakeServoPositions(
-//                ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
-//                ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-//                ServoConstants.INTAKE_WRIST_UP,
-//                ServoConstants.INTAKE_WRIST_RIGHT_POSITION,
-//                ServoConstants.INTAKE_WRIST_LEFT_POSITION,
-//                ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-//                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-//        );
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -48,6 +31,8 @@ public class Servo extends LinearOpMode {
             telemetry.update();
         }
     }
+
+
 
     private final Map<String, Long> triggerTimersOuttakeClaw = new HashMap<>();
     private final Map<String, Long> triggerTimersIntakeClaw = new HashMap<>();
@@ -72,33 +57,6 @@ public class Servo extends LinearOpMode {
             triggerTimersOuttakeClaw.put("outtakeClaw", currentTimeOuttakeClow);
         }
 
-/*
-        // Wrist rotation control
-        if (gamepad1.dpad_down) {
-            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES);
-        } else if (gamepad1.dpad_up) {
-            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_90_DEGREES);
-        } else if (gamepad1.dpad_left) {
-            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
-        }
-
-        // Wrist Y control
-        if (gamepad1.a) {
-            robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION);
-        } else if (gamepad1.y) {
-            robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
-        }
-
-        // Elbow control
-        if (gamepad1.right_bumper) {
-            robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
-            robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
-        } else if (gamepad1.left_bumper) {
-            robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_POSITION);
-            robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_POSITION);
-        }
-*/
-
         // Preset positions
         if (gamepad1.dpad_up) {
             robotConfig.setOuttakeServoPositions(
@@ -113,8 +71,8 @@ public class Servo extends LinearOpMode {
                     ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
                     ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
                     ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                    ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_POSITION,
-                    ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_POSITION
+                    ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
+                    ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
             );
         }
     }

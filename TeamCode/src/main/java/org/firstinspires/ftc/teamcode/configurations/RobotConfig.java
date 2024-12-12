@@ -12,6 +12,10 @@ public class RobotConfig {
     public static DcMotor frontRightMotor;
     public static DcMotor backRightMotor;
 
+    // Motoare de outtake
+    public static DcMotor upMotor;
+    public static DcMotor downMotor;
+
     // Servo outtake
     public Servo outtakeClawServo;
     public Servo outtakeWristRotServo;

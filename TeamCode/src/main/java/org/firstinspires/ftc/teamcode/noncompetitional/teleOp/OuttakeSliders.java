@@ -27,10 +27,10 @@ public class OuttakeSliders extends OpMode {
     private FtcDashboard dashboard;  // Instance of the Dashboard
 
     // PIDF Coefficients adjustable via the FTC Dashboard
-    public static double P = 0;
-    public static double I = 0.0;
-    public static double D = 0;
-    public static double F = 0;
+    public static double P = 0.01;
+    public static double I = 0.0001;
+    public static double D = 0.0003;
+    public static double F = 0.008;
     public static double K =0;
 
     public static double targetPosition = 0;  // This will be adjustable via Dashboard

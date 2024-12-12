@@ -11,14 +11,16 @@ public class ServoConstants {
     public static final double OUTTAKE_WRIST_ROT_180_DEGREES = 0.7722;
 
     // Outtake Wrist Y Servo Positions
-    public static final double OUTTAKE_WRIST_Y_TRANSFER_POSITION = 0.368;
+    public static final double OUTTAKE_WRIST_Y_TRANSFER_POSITION = 0.4113;
     public static final double OUTTAKE_WRIST_Y_PLACE_POSITION = 0.1207;
 
     // Outtake Elbow Servo Positions
-    public static final double OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION = 0.3666;
-    public static final double OUTTAKE_ELBOW_LEFT_PICKUP_POSITION = 0.5615;
-    public static final double OUTTAKE_ELBOW_RIGHT_PLACE_POSITION = 0.7974;
-    public static final double OUTTAKE_ELBOW_LEFT_PLACE_POSITION = 0.9923;
+    public static final double OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION = 0.4974;
+    public static final double OUTTAKE_ELBOW_LEFT_PICKUP_POSITION = 0.0943;
+    public static final double OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION = 0.697;
+    public static final double OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION = 0.2939;
+    public static final double OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION = 0.8768;
+    public static final double OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION = 0.4171;
 
     // Intake Elbow Servo Positions
     public static final double INTAKE_ELBOW_RIGHT_RETRACTED_POSITION = 0.01;
@@ -27,8 +29,10 @@ public class ServoConstants {
     public static final double INTAKE_ELBOW_LEFT_EXTENDED_POSITION = 0.01;
 
     // Intake Wrist Servo Positions
-    public static final double INTAKE_WRIST_LEFT_DOWN_POSITION = 0.2525;
-    public static final double INTAKE_WRIST_RIGHT_DOWN_POSITION = 0.7475;
+    public static final double INTAKE_WRIST_LEFT_DOWN_POSITION = 0.2725;
+    public static final double INTAKE_WRIST_RIGHT_DOWN_POSITION = 0.7275;
+    public static final double INTAKE_WRIST_LEFT_HOVER_POSITION = 0.3;
+    public static final double INTAKE_WRIST_RIGHT_HOVER_POSITION = 0.7;
     public static final double INTAKE_WRIST_LEFT_UP_POSITION = 1.0;
     public static final double INTAKE_WRIST_RIGHT_UP_POSITION = 0.0;
 
