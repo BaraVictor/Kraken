@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.configurations;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -38,6 +39,9 @@ public class RobotConfig {
         frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
         backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
 
+        upMotor = hardwareMap.dcMotor.get("upMotor");
+        downMotor = hardwareMap.dcMotor.get("downMotor");
+
         outtakeClawServo = hardwareMap.get(Servo.class, "outtakeClawServo");
         outtakeWristRotServo = hardwareMap.get(Servo.class, "outtakeWristRotServo");
         outtakeWristYServo = hardwareMap.get(Servo.class, "outtakeWristYServo");
@@ -57,6 +61,15 @@ public class RobotConfig {
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.FORWARD);
+
+        upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+        upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+
+        upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        downMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
 
     public void setMotorPowers(double frontLeftPower, double backLeftPower, double frontRightPower, double backRightPower) {

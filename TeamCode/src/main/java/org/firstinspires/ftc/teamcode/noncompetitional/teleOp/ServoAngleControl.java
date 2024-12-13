@@ -12,7 +12,7 @@ public class ServoAngleControl extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Inițializarea hardware-ului
-        servo = hardwareMap.get(Servo.class, "outtakeWristYServo");
+        servo = hardwareMap.get(Servo.class, "intakeClawServo");
         double servoPosition = servo.getPosition();
         // Așteptăm să înceapă
         telemetry.addData("Status", "Waiting for start");

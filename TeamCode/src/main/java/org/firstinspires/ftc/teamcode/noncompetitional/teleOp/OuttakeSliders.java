@@ -16,15 +16,16 @@ public class OuttakeSliders extends OpMode {
     private DcMotorEx leftMotor;
     private DcMotorEx rightMotor;
 
+    private FtcDashboard dashboard;  // Instance of the Dashboard
+
     private PIDFController pidfControllerLeft;
     private PIDFController pidfControllerRight;
 
     // Limits for the target position
     private static final int MIN_POSITION = 0;       // Minimum position in encoder units
     private static final int MAX_POSITION = 3990;    // Maximum position in encoder units
-    private static final int TOLERANCE = 10;        // Tolerance to stop the motor (in encoder ticks)
+    private static final int TOLERANCE = 10;         // Tolerance to stop the motor (in encoder ticks)
 
-    private FtcDashboard dashboard;  // Instance of the Dashboard
 
     // PIDF Coefficients adjustable via the FTC Dashboard
     public static double P = 0.01;
@@ -89,6 +90,13 @@ public class OuttakeSliders extends OpMode {
         // Apply power to both motors
         leftMotor.setPower(powerLeft);
         rightMotor.setPower(powerRight);
+
+        if(-gamepad1.left_stick_y > 0.1) {
+            targetPosition +=10;
+        }
+        else if(-gamepad1.left_stick_y < -0.1) {
+            targetPosition -=10;
+        }
 
         // Transmit telemetry data to FTC Dashboard
         telemetry.addData("Target Position", targetPosition);
