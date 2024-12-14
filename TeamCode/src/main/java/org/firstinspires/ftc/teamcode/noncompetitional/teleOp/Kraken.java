@@ -238,10 +238,10 @@ public class Kraken extends LinearOpMode {
                 }
                 break;
             case PLACE_SAMPLE:
-                /*if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 500) {
+                if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 500) {
                     OuttakeServoTimer.reset();
                     currentOuttakeState = OuttakeState.PLACE_SPECIMEN;
-                }*/
+                }
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -267,16 +267,16 @@ public class Kraken extends LinearOpMode {
                 }
                 break;
             case PLACE_SPECIMEN:
-                /*if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 500) {
+                if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 500) {
                     OuttakeServoTimer.reset();
                     currentOuttakeState = OuttakeState.PLACE_SAMPLE;
-                }*/
+                }
                 robotConfig.setOuttakeServoPositions(
-                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
-                            ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION
+                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
+                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
                 );
                 if(gamepad1.dpad_down) {
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
@@ -289,6 +289,10 @@ public class Kraken extends LinearOpMode {
                 }
                 else if(gamepad1.dpad_left) {
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
+                }
+                if(gamepad1.left_trigger > 0.1){
+                    currentOuttakeState = OuttakeState.DROP_SAMPLE;
+                    outtakeClawServoTimer.reset();
                 }
                 break;
             case DROP_SAMPLE:

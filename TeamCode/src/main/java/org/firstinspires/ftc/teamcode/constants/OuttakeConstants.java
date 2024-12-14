@@ -10,6 +10,6 @@ public class OuttakeConstants {
 
     public static final int OUTTAKE_TOP_SAMPLE_BOX = 1500;  // E max position
 
-    public static final int OUTTAKE_BOTTOM_SAMPLE_BOX = 850;
+    public static final int OUTTAKE_BOTTOM_SAMPLE_BOX = 700;
 
 }
