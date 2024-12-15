@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.Timer;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "Example Specimen Auto Red", group = "Simple")
+@Autonomous(name = "Example Specimen Auto Red", group = "Exemple autonomie")
 public class SimpleSpecimen extends OpMode {
 
     private Follower follower;

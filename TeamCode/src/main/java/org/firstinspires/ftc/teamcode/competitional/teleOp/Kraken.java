@@ -1,8 +1,10 @@
-package org.firstinspires.ftc.teamcode.noncompetitional.teleOp;
+package org.firstinspires.ftc.teamcode.competitional.teleOp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
@@ -11,46 +13,30 @@ import org.firstinspires.ftc.teamcode.constants.ServoConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Kraken", group = "Examples")
+@TeleOp(name = "🐙 Kraken 🐙", group = "1. Competitional")
 public class Kraken extends LinearOpMode {
 
     private RobotConfig robotConfig;
+    private FtcDashboard dashboard;
+
+    private boolean pickupIntakeButtonPressed = false;
     private boolean outtakeClawClosed = true;
     private boolean intakeClawClosed = true;
-    private boolean rot0 = true;
-    private boolean pickupIntakeButtonPressed = false;
     private boolean intakeDown = false;
-
-    private static final int MIN_POSITION = 0;       // Minimum position in encoder units
-    private static final int MAX_POSITION = 1520;    // Maximum position in encoder units
-    private static final int TOLERANCE = 10;
-
-    private FtcDashboard dashboard;  // Instance of the Dashboard
+    private boolean rot0 = true;
 
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
 
-    // PIDF Coefficients adjustable via the FTC Dashboard
     public static double P = 0.01;
     public static double I = 0.004;
     public static double D = 0;
     public static double F = 0.001;
     public static double K =0;
 
-    public static double targetPosition = 0;// Tolerance to stop the motor (in encoder ticks)
+    public static double targetPosition = 0;
 
-    // Timers pentru controlul claw-urilor
-    private final Map<String, Long> triggerTimersOuttakeClaw = new HashMap<>();
-    private final Map<String, Long> triggerTimersIntakeClaw = new HashMap<>();
-
-    public Kraken() throws InterruptedException {
-    }
-
-    // Enum pentru stările Outtake
     private enum OuttakeState {
         START,
         INIT,
@@ -60,14 +46,6 @@ public class Kraken extends LinearOpMode {
         DROP_SAMPLE
     }
 
-    private OuttakeState currentOuttakeState = OuttakeState.START;
-
-    private ElapsedTime TransferTimer = new ElapsedTime();
-    private ElapsedTime OuttakeServoTimer = new ElapsedTime();
-    private ElapsedTime outtakeClawServoTimer = new ElapsedTime();
-    private ElapsedTime yButtonPressed = new ElapsedTime();
-
-    // Enum pentru stările Intake
     private enum IntakeState {
         START,
         INIT,
@@ -77,6 +55,13 @@ public class Kraken extends LinearOpMode {
         WAITING,
         RETRACT
     }
+
+    private ElapsedTime TransferTimer = new ElapsedTime();
+    private ElapsedTime OuttakeServoTimer = new ElapsedTime();
+    private ElapsedTime outtakeClawServoTimer = new ElapsedTime();
+    private ElapsedTime yButtonPressed = new ElapsedTime();
+
+    private OuttakeState currentOuttakeState = OuttakeState.START;
     private IntakeState currentIntakeState = IntakeState.START;
 
     @Override
@@ -87,36 +72,32 @@ public class Kraken extends LinearOpMode {
 
         updatePIDFController();
 
-        //dashboard = FtcDashboard.getInstance();
-        //dashboard.setTelemetryTransmissionInterval(25); // Set telemetry update frequency
-        //telemetry = dashboard.getTelemetry();
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25);
+        telemetry = dashboard.getTelemetry();
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+
         waitForStart();
 
         while (opModeIsActive()) {
-
-            // Update PIDF controllers with current position and target
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
 
             pidfControllerDown.setTargetPosition(targetPosition);
             pidfControllerDown.updatePosition(robotConfig.downMotor.getCurrentPosition());
 
-            // Calculate motor power using PIDF output
             double powerUp = pidfControllerUp.runPIDF() + K;
             double powerDown = pidfControllerDown.runPIDF() + K;
 
-            // Stop motors if they are within tolerance of the target position
-            if (Math.abs(robotConfig.upMotor.getCurrentPosition() - targetPosition) <= TOLERANCE) {
+            if (Math.abs(robotConfig.upMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
                 powerUp = 0;
             }
 
-            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= TOLERANCE) {
+            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
                 powerDown = 0;
             }
 
-            // Apply power to both motors
             robotConfig.upMotor.setPower(powerUp);
             robotConfig.downMotor.setPower(powerDown);
 
@@ -127,25 +108,28 @@ public class Kraken extends LinearOpMode {
                 targetPosition -=10;
             }
 
+            if(gamepad1.share){
+                robotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                robotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+            }
+
             if(gamepad2.y) {
-                targetPosition = 1520;
+                targetPosition = OuttakeConstants.OUTTAKE_HANG_EXTENDED_POSITION;
             }
             if(gamepad2.a) {
-                targetPosition = 850;
+                targetPosition = OuttakeConstants.OUTTAKE_HANG_RETRACTED_POSITION;
             }
 
-            double y = -gamepad2.left_stick_y; // Mișcare înainte/înapoi
-            double x = gamepad2.left_stick_x; // Mișcare stânga/dreapta
-            double rx = gamepad2.right_stick_x; // Rotație
+            double y = -gamepad2.left_stick_y;
+            double x = gamepad2.left_stick_x;
+            double rx = gamepad2.right_stick_x;
 
-            // Calculează puterile motoarelor
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double frontLeftPower = (y + x + rx) / denominator;
             double backLeftPower = (y - x + rx) / denominator;
             double frontRightPower = (y - x - rx) / denominator;
             double backRightPower = (y + x - rx) / denominator;
 
-            // Setează puterea motoarelor
             robotConfig.setMotorPowers(
                     frontLeftPower,
                     backLeftPower,
@@ -153,26 +137,21 @@ public class Kraken extends LinearOpMode {
                     backRightPower
             );
 
-            if (gamepad1.right_stick_button && currentIntakeState != IntakeState.START) {
-                currentIntakeState = IntakeState.START;
+            if (gamepad1.right_stick_button) {
+                setIntakeState(IntakeState.START);
             }
             if (gamepad1.left_stick_button) {
-                currentOuttakeState = OuttakeState.PLACE_SAMPLE;
+                setOuttakeState(OuttakeState.PLACE_SAMPLE);
             }
+
             controlOuttakeState();
             controlIntakeState();
-//            controlOuttakeClawServo();
-//            controlIntakeClawServo();
 
+            updatePIDFController();
 
-            // Initialize PIDF controllers
-            updatePIDFController();  // Update PIDF with current coefficients
-
-            // Initialize FTC Dashboard
             dashboard = FtcDashboard.getInstance();
-            dashboard.setTelemetryTransmissionInterval(25); // Set telemetry update frequency
-            telemetry = dashboard.getTelemetry();  // Connect telemetry to the dashboard
-            // Add telemetry for motor and servo positions
+            dashboard.setTelemetryTransmissionInterval(25);
+            telemetry = dashboard.getTelemetry();
             telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
             telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
             telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
@@ -190,7 +169,6 @@ public class Kraken extends LinearOpMode {
             telemetry.addData("Intake State", currentIntakeState);
             telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
             telemetry.addData("Intake Claw Closed", intakeClawClosed);
-
             telemetry.addData("Target Position", targetPosition);
             telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());
             telemetry.addData("Right Motor Position", robotConfig.downMotor.getCurrentPosition());
@@ -221,7 +199,7 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
                         ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                 );
-                if(TransferTimer.seconds() > 1) {
+                if(TransferTimer.seconds() > 1) { //micsorat
                     outtakeClawServoTimer.reset();
                     if (ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0) {
                         robotConfig.setOuttakeServoPositions(
@@ -231,16 +209,16 @@ public class Kraken extends LinearOpMode {
                                 ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
                                 ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                         );
-                        currentIntakeState = IntakeState.START;
-                        sleep(100);
-                        currentOuttakeState = OuttakeState.PLACE_SAMPLE;
+                        setIntakeState(IntakeState.START);
+                        sleep(100); //sters
+                        setOuttakeState(OuttakeState.PLACE_SAMPLE);
                     }
                 }
                 break;
             case PLACE_SAMPLE:
                 if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 500) {
                     OuttakeServoTimer.reset();
-                    currentOuttakeState = OuttakeState.PLACE_SPECIMEN;
+                    setOuttakeState(OuttakeState.PLACE_SPECIMEN);
                 }
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
@@ -253,23 +231,23 @@ public class Kraken extends LinearOpMode {
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
                 }
                 else if(gamepad1.dpad_up) {
-                    targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
+                    targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
                 }
                 else if(gamepad1.dpad_right) {
-                    targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
+                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
                 }
                 else if(gamepad1.dpad_left) {
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 if(gamepad1.left_trigger > 0.1){
-                    currentOuttakeState = OuttakeState.DROP_SAMPLE;
+                    setOuttakeState(OuttakeState.DROP_SAMPLE);
                     outtakeClawServoTimer.reset();
                 }
                 break;
             case PLACE_SPECIMEN:
                 if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 500) {
                     OuttakeServoTimer.reset();
-                    currentOuttakeState = OuttakeState.PLACE_SAMPLE;
+                    setOuttakeState(OuttakeState.PLACE_SAMPLE);
                 }
                 robotConfig.setOuttakeServoPositions(
                         ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
@@ -291,7 +269,7 @@ public class Kraken extends LinearOpMode {
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 if(gamepad1.left_trigger > 0.1){
-                    currentOuttakeState = OuttakeState.DROP_SAMPLE;
+                    setOuttakeState(OuttakeState.DROP_SAMPLE);
                     outtakeClawServoTimer.reset();
                 }
                 break;
@@ -313,7 +291,7 @@ public class Kraken extends LinearOpMode {
                 }
                 break;
             default:
-                currentOuttakeState = OuttakeState.PICKUP;
+                setOuttakeState(OuttakeState.PICKUP);
                 break;
         }
     }
@@ -340,7 +318,7 @@ public class Kraken extends LinearOpMode {
                             ServoConstants.INTAKE_CLAW_OPEN_POSITION,
                             ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                     );
-                    currentIntakeState = IntakeState.LIFT_EXTEND;
+                    setIntakeState(IntakeState.LIFT_EXTEND);
                 }
                 break;
             case LIFT_EXTEND:
@@ -354,7 +332,7 @@ public class Kraken extends LinearOpMode {
                             ServoConstants.INTAKE_CLAW_OPEN_POSITION,
                             ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                     );
-                    currentIntakeState = IntakeState.PICKUP;
+                    setIntakeState(IntakeState.PICKUP);
                 }
                 break;
             case PICKUP:
@@ -434,13 +412,13 @@ public class Kraken extends LinearOpMode {
                 }
                 if(gamepad1.right_trigger>0.1 && pickupIntakeButtonPressed) {
                     robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
-                    currentIntakeState = IntakeState.RETRACT;
+                    setIntakeState(IntakeState.RETRACT);
                 }
                 break;
             case RETRACT:
                 TransferTimer.reset();
                 pickupIntakeButtonPressed = false;
-                currentOuttakeState = OuttakeState.PICKUP;
+                setOuttakeState(OuttakeState.PICKUP);
                 if(rot0){
                     robotConfig.setIntakeServoPositions(
                             ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
@@ -464,7 +442,7 @@ public class Kraken extends LinearOpMode {
                             ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
                     );
                 }
-                currentIntakeState = IntakeState.WAITING;
+                setIntakeState(IntakeState.WAITING);
                 break;
             case WAITING:
                 robotConfig.setIntakeServoPositions(
@@ -478,44 +456,8 @@ public class Kraken extends LinearOpMode {
                 );
                 break;
             default:
-                currentIntakeState = IntakeState.START;
+                setIntakeState(IntakeState.START);
                 break;
-        }
-    }
-
-    private void controlOuttakeClawServo() {
-        final long TRIGGER_DELAY_MS_OUTTAKECLAW = 500;
-        long currentTimeOuttakeClaw = System.currentTimeMillis();
-
-        long lastTriggerTimeClawServo = triggerTimersOuttakeClaw.getOrDefault("outtakeClaw", 0L);
-
-        if (gamepad1.left_trigger > 0.1 && (currentTimeOuttakeClaw - lastTriggerTimeClawServo > TRIGGER_DELAY_MS_OUTTAKECLAW)) {
-            if (outtakeClawClosed) {
-                robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
-                outtakeClawClosed = false;
-            } else {
-                robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
-                outtakeClawClosed = true;
-            }
-            triggerTimersOuttakeClaw.put("outtakeClaw", currentTimeOuttakeClaw);
-        }
-    }
-
-    private void controlIntakeClawServo() {
-        final long TRIGGER_DELAY_MS_INTAKECLAW = 500;
-        long currentTime = System.currentTimeMillis();
-
-        long lastTriggerTimeIntakeClaw = triggerTimersIntakeClaw.getOrDefault("intakeClaw", 0L);
-
-        if (gamepad1.right_trigger > 0.1 && (currentTime - lastTriggerTimeIntakeClaw > TRIGGER_DELAY_MS_INTAKECLAW)) {
-            if (intakeClawClosed) {
-                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_OPEN_POSITION);
-                intakeClawClosed = false;
-            } else {
-                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
-                intakeClawClosed = true;
-            }
-            triggerTimersIntakeClaw.put("intakeClaw", currentTime);
         }
     }
 
