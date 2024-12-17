@@ -55,7 +55,7 @@ public class ForwardVelocityTuner extends OpMode {
 
     private PoseUpdater poseUpdater;
 
-    public static double DISTANCE = 48;
+    public static double DISTANCE = 72;
     public static double RECORD_NUMBER = 10;
 
     private Telemetry telemetryA;

@@ -47,6 +47,6 @@ public class ServoConstants {
     public static final double INTAKE_CLAW_CLOSED_POSITION = 0.7;
 
     // Intake Wrist Rotation Servo Positions
-    public static final double INTAKE_WRIST_ROT_0_DEGREES = 0.4031;
-    public static final double INTAKE_WRIST_ROT_90_DEGREES = 0.9515;
+    public static final double INTAKE_WRIST_ROT_0_DEGREES = 0.431;
+    public static final double INTAKE_WRIST_ROT_90_DEGREES = 1.0;
 }
