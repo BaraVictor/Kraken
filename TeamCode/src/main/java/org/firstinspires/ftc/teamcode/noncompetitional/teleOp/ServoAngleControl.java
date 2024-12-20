@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.noncompetitional.teleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Servo Angle Control", group = "Examples")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Servo Angle Control", group = "Test")
 public class ServoAngleControl extends LinearOpMode {
 
     private Servo servo; // Definirea servo-ului
@@ -12,7 +12,7 @@ public class ServoAngleControl extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Inițializarea hardware-ului
-        servo = hardwareMap.get(Servo.class, "intakeClawServo");
+        servo = hardwareMap.get(Servo.class, "outtakeWristRotServo");
         double servoPosition = servo.getPosition();
         // Așteptăm să înceapă
         telemetry.addData("Status", "Waiting for start");

@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 
-@TeleOp
+@TeleOp(name = "Robot Centric", group = "Test")
 public class RobotCentric extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

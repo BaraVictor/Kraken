@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
 @Config  // Enables the adjustment of values from the FTC Dashboard
-@TeleOp(name = "Outtake Sliders with PIDF and Joystick", group = "TeleOp")
+@TeleOp(name = "Outtake Sliders with PIDF and Joystick", group = "Test")
 public class OuttakeSliders extends OpMode {
     private DcMotorEx leftMotor;
     private DcMotorEx rightMotor;

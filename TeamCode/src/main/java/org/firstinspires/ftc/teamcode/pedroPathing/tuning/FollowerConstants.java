@@ -73,9 +73,9 @@ public class FollowerConstants {
 
     // Drive PIDF coefficients
     public static CustomFilteredPIDFCoefficients drivePIDFCoefficients = new CustomFilteredPIDFCoefficients(
-            0.011,
+            0.005,
             0,
-            0.0004,
+            0.000001,
             0.6,
             0);
 
@@ -92,7 +92,7 @@ public class FollowerConstants {
     public static double mass = 11.2;
 
     // Centripetal force to power scaling
-    public static double centripetalScaling = 0.001;
+    public static double centripetalScaling = 0.0003;
 
 
     // Acceleration of the drivetrain when power is cut in inches/second^2 (should be negative)

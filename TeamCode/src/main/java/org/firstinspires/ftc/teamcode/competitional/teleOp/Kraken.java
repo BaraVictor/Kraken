@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
 @Config
-@TeleOp(name = "🐙 Kraken 🐙", group = "1. Competitional")
+@TeleOp(name = "🐙 Kraken 🐙", group = "A. Competitional")
 public class Kraken extends LinearOpMode {
 
     private RobotConfig robotConfig;
@@ -111,6 +111,10 @@ public class Kraken extends LinearOpMode {
             if(gamepad1.share){
                 robotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 robotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                robotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                robotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                robotConfig.upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+                robotConfig.downMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
             }
 
             if(gamepad2.y) {
@@ -152,23 +156,23 @@ public class Kraken extends LinearOpMode {
             dashboard = FtcDashboard.getInstance();
             dashboard.setTelemetryTransmissionInterval(25);
             telemetry = dashboard.getTelemetry();
-            telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
-            telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
-            telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
-            telemetry.addData("Outtake Elbow Right Position", robotConfig.outtakeElbowRightServo.getPosition());
-            telemetry.addData("Outtake Elbow Left Position", robotConfig.outtakeElbowLeftServo.getPosition());
-            telemetry.addData("TranferTimer", TransferTimer.seconds());
-            telemetry.addData("Intake Elbow Right Position", robotConfig.intakeElbowRightServo.getPosition());
-            telemetry.addData("Intake Elbow Left Position", robotConfig.intakeElbowLeftServo.getPosition());
-            telemetry.addData("Intake Wrist Position", robotConfig.intakeWristServo.getPosition());
-            telemetry.addData("Intake Wrist Right Position", robotConfig.intakeWristRightServo.getPosition());
-            telemetry.addData("Intake Wrist Left Position", robotConfig.intakeWristLeftServo.getPosition());
-            telemetry.addData("Intake Claw Position", robotConfig.intakeClawServo.getPosition());
-            telemetry.addData("Intake Wrist Rot Position", robotConfig.intakeWristRotServo.getPosition());
-            telemetry.addData("Outtake State", currentOuttakeState);
-            telemetry.addData("Intake State", currentIntakeState);
-            telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
-            telemetry.addData("Intake Claw Closed", intakeClawClosed);
+//            telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
+//            telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
+//            telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
+//            telemetry.addData("Outtake Elbow Right Position", robotConfig.outtakeElbowRightServo.getPosition());
+//            telemetry.addData("Outtake Elbow Left Position", robotConfig.outtakeElbowLeftServo.getPosition());
+//            telemetry.addData("TranferTimer", TransferTimer.seconds());
+//            telemetry.addData("Intake Elbow Right Position", robotConfig.intakeElbowRightServo.getPosition());
+//            telemetry.addData("Intake Elbow Left Position", robotConfig.intakeElbowLeftServo.getPosition());
+//            telemetry.addData("Intake Wrist Position", robotConfig.intakeWristServo.getPosition());
+//            telemetry.addData("Intake Wrist Right Position", robotConfig.intakeWristRightServo.getPosition());
+//            telemetry.addData("Intake Wrist Left Position", robotConfig.intakeWristLeftServo.getPosition());
+//            telemetry.addData("Intake Claw Position", robotConfig.intakeClawServo.getPosition());
+//            telemetry.addData("Intake Wrist Rot Position", robotConfig.intakeWristRotServo.getPosition());
+//            telemetry.addData("Outtake State", currentOuttakeState);
+//            telemetry.addData("Intake State", currentIntakeState);
+//            telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
+//            telemetry.addData("Intake Claw Closed", intakeClawClosed);
             telemetry.addData("Target Position", targetPosition);
             telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());
             telemetry.addData("Right Motor Position", robotConfig.downMotor.getCurrentPosition());
@@ -345,7 +349,7 @@ public class Kraken extends LinearOpMode {
                     rot0 = false;
                 }
 
-                if(gamepad1.y && yButtonPressed.milliseconds() > 200){
+                if(gamepad1.y && yButtonPressed.milliseconds() > 250){
                     yButtonPressed.reset();
                     if(!intakeDown){
                         if(rot0){

@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.constants.ServoConstants;
 import java.util.HashMap;
 import java.util.Map;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Servos", group = "Examples")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Servos", group = "Test")
 public class Servos extends LinearOpMode {
 
     private RobotConfig robotConfig;
