@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.noncompetitional.auto;
 
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -33,6 +31,8 @@ public class Sample extends OpMode {
 
     private ElapsedTime turningTimer = new ElapsedTime();
 
+    private ElapsedTime revolutTimer = new ElapsedTime();
+
     private boolean deposited = false;
     private boolean hovering = false;
     private boolean intaking = false;
@@ -61,6 +61,19 @@ public class Sample extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
+
+    /*
+    TO Do:
+    Schimbate pozitiile
+    verificat timere
+    Finalizare parcare
+
+    Done:
+    Outtake se da peste cap dupa ce ajunge sus
+    schimbat timere (provizoriu)
+     */
+
+
     private final Pose score = new Pose(21.5, 128, Math.toRadians(318));
 
     private final Pose scorePos2 = new Pose(19, 129, Math.toRadians(318));
@@ -75,14 +88,15 @@ public class Sample extends OpMode {
 
     private final Pose sample2 = new Pose(22.5, 131, Math.toRadians(6.5));
 
-    private final Pose sample3 = new Pose(24, 139, Math.toRadians(15));         // tot be 55
+    private final Pose sample3 = new Pose(23, 139, Math.toRadians(15));         // tot be 55
 
-    private final Pose park = new Pose(70, 100, Math.toRadians(90));
-    private final Pose parkControl = new Pose(70, 140, Math.toRadians(90));
+    private final Pose park = new Pose(80, 95, Math.toRadians(270));
+
+    private final Pose parkFinal = new Pose(80, 10 , Math.toRadians(90));
 
     private Path scorePreload;
 
-    private PathChain firstPickup, secondPickup, thirdPickup, parkPath, score1, score2, score3;
+    private PathChain firstPickup, secondPickup, thirdPickup, parkPath, score1, score2, score3, parkPsuh;
 
     public void buildPaths() {
 
@@ -128,9 +142,10 @@ public class Sample extends OpMode {
                 .build();
 
         parkPath = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(scorePos3), new Point(parkControl), new Point(park)))
+                .addPath(new BezierCurve(new Point(scorePos3), new Point(park), new Point(park)))
                 .setLinearHeadingInterpolation(scorePos3.getHeading(), park.getHeading())
                 .build();
+
 
         /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
 
@@ -147,6 +162,7 @@ public class Sample extends OpMode {
             case 0:
                 follower.followPath(scorePreload);
                 retractTimer.reset();
+                revolutTimer.reset();
                 setPathState(1);
                 break;
 
@@ -155,24 +171,24 @@ public class Sample extends OpMode {
                     /* Score Preload */
                     if (!deposited) {
                         targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
-                        robotConfig.setOuttakeServoPositions(
-                                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                                ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                                ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
-                                ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
-                        );
+                        robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
+                        robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                     }
                     if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 30) {
-                        robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
-                        if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
-                            deposited = true;
-                            if (retractTimer.seconds() > 2) {
-                                targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                                if (robotConfig.upMotor.getCurrentPosition() < targetPosition + 15) {
-                                    follower.followPath(firstPickup, true);
-                                    turningTimer.reset();
-                                    setPathState(2);
+                        robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
+                        robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
+                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
+                        if(revolutTimer.seconds()>2){
+                            robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
+                            if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
+                                deposited = true;
+                                if (retractTimer.seconds() > 2.5) {
+                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                    if (robotConfig.upMotor.getCurrentPosition() < targetPosition + 15) {
+                                        follower.followPath(firstPickup, true);
+                                        turningTimer.reset();
+                                        setPathState(2);
+                                    }
                                 }
                             }
                         }
@@ -190,50 +206,51 @@ public class Sample extends OpMode {
                     );
                     hasTurned = true;
                 }
-                    if (!hovering && Math.toDegrees(follower.getPose().getHeading()) > 357 && hasTurned && turningTimer.seconds() > 1) {
+                if (!hovering && Math.toDegrees(follower.getPose().getHeading()) > 357 && hasTurned && turningTimer.seconds() > 1) {
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_WRIST_DOWN,
+                            ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                    );
+                    hoverTimer.reset();
+                }
+                if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
+                    hovering = true;
+                    if (!intaking) {
                         robotConfig.setIntakeServoPositions(
                                 ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                                 ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
                                 ServoConstants.INTAKE_WRIST_DOWN,
-                                ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
-                                ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                                ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
                                 ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                        );
-                        hoverTimer.reset();
-                    }
-                    if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
-                        hovering = true;
-                        if (!intaking) {
+                                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+                        intaking = true;
+                    } else {
+                        if (hoverTimer.seconds() > 1.2) {
                             robotConfig.setIntakeServoPositions(
                                     ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                                     ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
                                     ServoConstants.INTAKE_WRIST_DOWN,
                                     ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
                                     ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
-                            intaking = true;
-                        } else {
-                            if (hoverTimer.seconds() > 1.2) {
-                                robotConfig.setIntakeServoPositions(
-                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                        ServoConstants.INTAKE_WRIST_DOWN,
-                                        ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                        ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                                );
-                                if (robotConfig.intakeClawServo.getPosition() > ServoConstants.INTAKE_CLAW_CLOSED_POSITION - 0.1) {
-                                    follower.followPath(score1, true);
-                                    deposited = false;
-                                    retractTimer.reset();
-                                    setPathState(3);
-                                }
+                                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                            );
+                            if (robotConfig.intakeClawServo.getPosition() > ServoConstants.INTAKE_CLAW_CLOSED_POSITION - 0.1) {
+                                follower.followPath(score1, true);
+                                deposited = false;
+                                revolutTimer.reset();
+                                retractTimer.reset();
+                                setPathState(3);
                             }
                         }
                     }
+                }
                 break;
             case 3:
                 if (follower.getPose().getX() > (sample1.getX() - 1) && follower.getPose().getY() > (sample1.getY() - 1)) {
@@ -283,32 +300,32 @@ public class Sample extends OpMode {
                         hasTransfered = true;
                     }
                 }
-                    if (hasTransfered) {
-                        if(!deposited) {
-                            targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                            if(!opened) {
-                                robotConfig.setOuttakeServoPositions(
-                                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                                        ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
-                                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
-                                );
-                            }
+                if (hasTransfered) {
+                    if(!deposited) {
+                        targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
+                        if(!opened) {
+                            robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
+                            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                         }
-                            if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 30) {
-                                robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
-                                if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
-                                    opened = true;
-                                    if (retractTimer.seconds() > 2.3) {
-                                        targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                                        deposited = true;
-                                    }
+                    }
+                    if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 30) {
+                        robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
+                        robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
+                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
+                        if(revolutTimer.seconds()>2.5){
+                            robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
+                            if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
+                                opened = true;
+                                if (retractTimer.seconds() > 2.8) {
+                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                    deposited = true;
                                 }
                             }
-
-
+                        }
                     }
+
+
+                }
                 if(deposited && robotConfig.upMotor.getCurrentPosition() < targetPosition + 21) {
                     hasTurned = false;
                     hovering = false;
@@ -319,7 +336,7 @@ public class Sample extends OpMode {
                 }
                 break;
 
-                //sample 3, to be tested
+            //sample 3, to be tested
             case 4:
                 if (follower.getPose().getX() > (sample2.getX() - 1) && follower.getPose().getY() > (sample2.getY() - 1)) {
                     robotConfig.setOuttakeServoPositions(
@@ -374,6 +391,7 @@ public class Sample extends OpMode {
                                 closed = false;
                                 opened = false;
                                 retractTimer.reset();
+                                revolutTimer.reset();
                                 setPathState(5);
                             }
                         }
@@ -433,22 +451,22 @@ public class Sample extends OpMode {
                     if(!deposited) {
                         targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
                         if(!opened) {
-                            robotConfig.setOuttakeServoPositions(
-                                    ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                                    ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                                    ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                                    ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
-                                    ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
-                            );
+                            robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
+                            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                         }
                     }
                     if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 30) {
-                        robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
-                        if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
-                            opened = true;
-                            if (retractTimer.seconds() > 2.3) {
-                                targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                                deposited = true;
+                        robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
+                        robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
+                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
+                        if(revolutTimer.seconds()>2.5){
+                            robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
+                            if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
+                                opened = true;
+                                if (retractTimer.seconds() > 2.8) {
+                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                    deposited = true;
+                                }
                             }
                         }
                     }
@@ -519,6 +537,7 @@ public class Sample extends OpMode {
                                 closed = false;
                                 opened = false;
                                 retractTimer.reset();
+                                revolutTimer.reset();
                                 setPathState(7);
                             }
                         }
@@ -578,22 +597,22 @@ public class Sample extends OpMode {
                     if(!deposited) {
                         targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
                         if(!opened) {
-                            robotConfig.setOuttakeServoPositions(
-                                    ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                                    ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                                    ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                                    ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
-                                    ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
-                            );
+                            robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
+                            robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                         }
                     }
                     if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 30) {
-                        robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
-                        if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
-                            opened = true;
-                            if (retractTimer.seconds() > 2.3) {
-                                targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                                deposited = true;
+                        robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
+                        robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
+                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
+                        if(revolutTimer.seconds()>2.5){
+                            robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
+                            if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
+                                opened = true;
+                                if (retractTimer.seconds() > 2.8) {
+                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                    deposited = true;
+                                }
                             }
                         }
                     }
@@ -605,10 +624,12 @@ public class Sample extends OpMode {
                     hovering = false;
                     intaking = false;
                     turningTimer.reset();
-                    follower.followPath(parkPath, true);
+                    follower.followPath(parkPath,true);
                     setPathState(-1);
                 }
                 break;
+
+
                 /*
             case 5:
                 follower.followPath(thirdPickup,false);
@@ -625,132 +646,132 @@ public class Sample extends OpMode {
 
         }
     }
-        /** These change the states of the paths and actions
-         * It will also reset the timers of the individual switches **/
-        public void setPathState ( int pState){
-            pathState = pState;
-            pathTimer.resetTimer();
-        }
-        @Override
-        public void init () {
-            robotConfig = new RobotConfig(hardwareMap);
-            robotConfig.upMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robotConfig.upMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            robotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-            robotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-
-            robotConfig.upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-            robotConfig.upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
-            updatePIDFController();
-
-            telemetry.addLine("Outtake Sliders Initialized with PIDF and Joystick Control");
-            pathTimer = new Timer();
-            opmodeTimer = new Timer();
-
-            opmodeTimer.resetTimer();
-
-            follower = new Follower(hardwareMap);
-            follower.setStartingPose(startPose);
-
-            buildPaths();
-
-            resetServosToInit();
-
-            telemetry.addData("Status", "Initialized");
-            telemetry.addLine("Motors have been reset");
-            telemetry.update();
-        }
-        /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
-        @Override
-        public void loop () {
-
-            pidfControllerUp.setTargetPosition(targetPosition);
-            pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
-
-            pidfControllerDown.setTargetPosition(targetPosition);
-            pidfControllerDown.updatePosition(robotConfig.downMotor.getCurrentPosition());
-
-            double powerUp = pidfControllerUp.runPIDF() + K;
-            double powerDown = pidfControllerDown.runPIDF() + K;
-
-            if (Math.abs(robotConfig.upMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
-                powerUp = 0;
-            }
-
-            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
-                powerDown = 0;
-            }
-
-            robotConfig.upMotor.setPower(powerUp);
-            robotConfig.downMotor.setPower(powerDown);
-
-            updatePIDFController();
-
-
-            // These loop the movements of the robot
-            follower.update();
-            autonomousPathUpdate();
-
-
-            // Feedback to Driver Hub
-            telemetry.addData("path state", pathState);
-            telemetry.addData("x", follower.getPose().getX());
-            telemetry.addData("y", follower.getPose().getY());
-            telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
-            telemetry.addData("timer", pathTimer.getElapsedTimeSeconds());
-            telemetry.addData("retract timer", retractTimer.seconds());
-            telemetry.addData("hover timer", hoverTimer.seconds());
-            telemetry.addData("slider pos", robotConfig.upMotor.getCurrentPosition());
-            telemetry.addData("target pos", targetPosition);
-            telemetry.addData("deposited", deposited);
-            telemetry.addData("intakeTimer", intakeTimer.seconds());
-            telemetry.addData("transfer", transfer);
-            telemetry.addData("has turned", hasTurned);
-            telemetry.update();
-        }
-
-        /** This method is called continuously after Init while waiting for "play". **/
-        @Override
-        public void init_loop () {
-        }
-
-        /** This method is called once at the start of the OpMode.
-         * It runs all the setup actions, including building paths and starting the path system **/
-        @Override
-        public void start () {
-            opmodeTimer.resetTimer();
-            setPathState(0);
-        }
-
-        /** We do not use this because everything should automatically disable **/
-        @Override
-        public void stop () {
-        }
-
-        private void updatePIDFController () {
-            CustomPIDFCoefficients coefficients = new CustomPIDFCoefficients(P, I, D, F);
-            pidfControllerUp = new PIDFController(coefficients);
-            pidfControllerDown = new PIDFController(coefficients);
-        }
-
-        private void resetServosToInit () {
-            robotConfig.setOuttakeServoPositions(
-                    ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                    ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                    ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
-                    ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
-                    ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
-            );
-            robotConfig.setIntakeServoPositions(
-                    ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
-                    ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                    ServoConstants.INTAKE_WRIST_UP,
-                    ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
-                    ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
-                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-            );
-        }
+    /** These change the states of the paths and actions
+     * It will also reset the timers of the individual switches **/
+    public void setPathState ( int pState){
+        pathState = pState;
+        pathTimer.resetTimer();
     }
+    @Override
+    public void init () {
+        robotConfig = new RobotConfig(hardwareMap);
+        robotConfig.upMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robotConfig.upMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        robotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        robotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+
+        robotConfig.upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        robotConfig.upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        updatePIDFController();
+
+        telemetry.addLine("Outtake Sliders Initialized with PIDF and Joystick Control");
+        pathTimer = new Timer();
+        opmodeTimer = new Timer();
+
+        opmodeTimer.resetTimer();
+
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
+
+        buildPaths();
+
+        resetServosToInit();
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.addLine("Motors have been reset");
+        telemetry.update();
+    }
+    /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
+    @Override
+    public void loop () {
+
+        pidfControllerUp.setTargetPosition(targetPosition);
+        pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
+
+        pidfControllerDown.setTargetPosition(targetPosition);
+        pidfControllerDown.updatePosition(robotConfig.downMotor.getCurrentPosition());
+
+        double powerUp = pidfControllerUp.runPIDF() + K;
+        double powerDown = pidfControllerDown.runPIDF() + K;
+
+        if (Math.abs(robotConfig.upMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
+            powerUp = 0;
+        }
+
+        if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
+            powerDown = 0;
+        }
+
+        robotConfig.upMotor.setPower(powerUp);
+        robotConfig.downMotor.setPower(powerDown);
+
+        updatePIDFController();
+
+
+        // These loop the movements of the robot
+        follower.update();
+        autonomousPathUpdate();
+
+
+        // Feedback to Driver Hub
+        telemetry.addData("path state", pathState);
+        telemetry.addData("x", follower.getPose().getX());
+        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
+        telemetry.addData("timer", pathTimer.getElapsedTimeSeconds());
+        telemetry.addData("retract timer", retractTimer.seconds());
+        telemetry.addData("hover timer", hoverTimer.seconds());
+        telemetry.addData("slider pos", robotConfig.upMotor.getCurrentPosition());
+        telemetry.addData("target pos", targetPosition);
+        telemetry.addData("deposited", deposited);
+        telemetry.addData("intakeTimer", intakeTimer.seconds());
+        telemetry.addData("transfer", transfer);
+        telemetry.addData("has turned", hasTurned);
+        telemetry.update();
+    }
+
+    /** This method is called continuously after Init while waiting for "play". **/
+    @Override
+    public void init_loop () {
+    }
+
+    /** This method is called once at the start of the OpMode.
+     * It runs all the setup actions, including building paths and starting the path system **/
+    @Override
+    public void start () {
+        opmodeTimer.resetTimer();
+        setPathState(0);
+    }
+
+    /** We do not use this because everything should automatically disable **/
+    @Override
+    public void stop () {
+    }
+
+    private void updatePIDFController () {
+        CustomPIDFCoefficients coefficients = new CustomPIDFCoefficients(P, I, D, F);
+        pidfControllerUp = new PIDFController(coefficients);
+        pidfControllerDown = new PIDFController(coefficients);
+    }
+
+    private void resetServosToInit () {
+        robotConfig.setOuttakeServoPositions(
+                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+                ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+        );
+        robotConfig.setIntakeServoPositions(
+                ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                ServoConstants.INTAKE_WRIST_UP,
+                ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+        );
+    }
+}
