@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.noncompetitional.auto;
 
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,22 +27,16 @@ public class Sample extends OpMode {
     private ElapsedTime retractTimer = new ElapsedTime();
     private ElapsedTime hoverTimer = new ElapsedTime();
     private ElapsedTime intakeTimer = new ElapsedTime();
-
     private ElapsedTime turningTimer = new ElapsedTime();
-
     private ElapsedTime revolutTimer = new ElapsedTime();
 
     private boolean deposited = false;
     private boolean hovering = false;
     private boolean intaking = false;
     private boolean transfer = false;
-
     private boolean hasTurned = false;
-
     private boolean closed = false;
-
     private boolean opened = false;
-
     private boolean hasTransfered = false;
     private RobotConfig robotConfig;
 
@@ -64,38 +57,28 @@ public class Sample extends OpMode {
 
     /*
     TO Do:
-    Schimbate pozitiile
-    verificat timere
+    Scurtat timere
+    Meshup paths-slidere (actiuni)
     Finalizare parcare
 
     Done:
+    Schimbate pozitiile
     Outtake se da peste cap dupa ce ajunge sus
-    schimbat timere (provizoriu)
      */
 
 
-    private final Pose score = new Pose(21.5, 128, Math.toRadians(318));
-
-    private final Pose scorePos2 = new Pose(19, 129, Math.toRadians(318));
-
+    private final Pose score = new Pose(21, 128, Math.toRadians(318));
+    private final Pose scorePos2 = new Pose(20.5, 129, Math.toRadians(318));
     private final Pose scorePos3 = new Pose(21, 129, Math.toRadians(318));
-
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));
-
     private final Pose preload = new Pose(20, 126, Math.toRadians(318));
-
     private final Pose sample1 = new Pose(22.5, 126, Math.toRadians(357));
-
     private final Pose sample2 = new Pose(22.5, 131, Math.toRadians(6.5));
-
-    private final Pose sample3 = new Pose(23, 139, Math.toRadians(15));         // tot be 55
-
+    private final Pose sample3 = new Pose(23, 139, Math.toRadians(15));
     private final Pose park = new Pose(80, 95, Math.toRadians(270));
-
     private final Pose parkFinal = new Pose(80, 10 , Math.toRadians(90));
 
     private Path scorePreload;
-
     private PathChain firstPickup, secondPickup, thirdPickup, parkPath, score1, score2, score3, parkPsuh;
 
     public void buildPaths() {
