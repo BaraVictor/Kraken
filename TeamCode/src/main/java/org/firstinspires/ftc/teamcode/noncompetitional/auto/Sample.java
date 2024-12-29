@@ -38,6 +38,7 @@ public class Sample extends OpMode {
     private boolean closed = false;
     private boolean opened = false;
     private boolean hasTransfered = false;
+
     private RobotConfig robotConfig;
 
     private PIDFController pidfControllerUp;
