@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autoPaths.red;
+package org.firstinspires.ftc.teamcode.noncompetitional.auto;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
