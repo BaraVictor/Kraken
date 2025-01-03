@@ -41,9 +41,9 @@ public class DetectColorsAndDistance extends LinearOpMode {
             float value = hsvValues[2]; // Value (brightness) (0.0 - 1.0)
 
             // Detect yellow, blue, and red based on HSV ranges
-            boolean isYellow = (hue >= 20 && hue <= 50) && (saturation >= 0.5) && (value >= 0.5);
-            boolean isBlue = (hue >= 200 && hue <= 260) && (saturation >= 0.5) && (value >= 0.5);
-            boolean isRed = ((hue >= 0 && hue <= 20) || (hue >= 340 && hue <= 360)) && (saturation >= 0.5) && (value >= 0.5);
+            boolean isYellow = (hue >= 70 && hue <= 90) && (saturation >= 0.4) && (value >= 0.1);
+            boolean isBlue = (hue >= 190 && hue <= 260) && (saturation >= 0.4) && (value >= 0.04);
+            boolean isRed = ((hue >= 0 && hue <= 40) || (hue >= 340 && hue <= 360)) && (saturation >= 0.4) && (value >= 0.04);
 
             // Measure distance in cm
             double distanceCm = distanceSensor.getDistance(DistanceUnit.CM);
