@@ -25,6 +25,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.Timer;
 
 @Autonomous(name = "SpecimenAuto", group = "B")
 public class Specimen extends OpMode {
+
+    private boolean ajuns1 = false;
+    private boolean ajuns2 = false;
     private ElapsedTime timer = new ElapsedTime();
 
     private Follower follower;
@@ -56,7 +59,7 @@ public class Specimen extends OpMode {
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path preloadDrop;
-    private PathChain score1, score2, score3, cycle1, cycle2, cycle3, cycle4;
+    private PathChain lineup1, lineup2, lineup3, score1, score2, score3, cycle1, cycle2, cycle3, cycle4;
     private PathChain park;
 
     /** Build the paths for the auto (adds, for example, constant/linear headings while doing paths)
@@ -67,23 +70,32 @@ public class Specimen extends OpMode {
         preloadDrop.setLinearHeadingInterpolation(startPose.getHeading(), preload.getHeading());
 
         //impinge primul spcimen spre human player
-        score1 = follower.pathBuilder()
+        lineup1 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(preload), new Point(sample1)))
                 .setLinearHeadingInterpolation(preload.getHeading(), sample1.getHeading())
+                .build();
+
+        score1  = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(sample1), new Point(sampleRotate1)))
                 .setLinearHeadingInterpolation(sample1.getHeading(), sampleRotate1.getHeading())
                 .build();
 
-        score2 = follower.pathBuilder()
+        lineup2 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(sampleRotate1), new Point(sample2)))
                 .setLinearHeadingInterpolation(sampleRotate1.getHeading(), sample2.getHeading())
+                .build();
+
+        score2 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(sample2), new Point(sampleRotate2)))
                 .setLinearHeadingInterpolation(sample2.getHeading(), sampleRotate2.getHeading())
                 .build();
 
-        score3 = follower.pathBuilder()
+        lineup3 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(sampleRotate2), new Point(sample3)))
                 .setLinearHeadingInterpolation(sampleRotate2.getHeading(), sample3.getHeading())
+                .build();
+
+        score3 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(sample3), new Point(sampleRotate3)))
                 .setLinearHeadingInterpolation(sample3.getHeading(), sampleRotate3.getHeading())
                 .build();
@@ -138,22 +150,25 @@ public class Specimen extends OpMode {
         switch (pathState) {
             case 0:
                 follower.followPath(preloadDrop);
-                if(timer.seconds() > 3) {
-                    timer.reset();
-                    setPathState(1);
-                }
+                setPathState(1);
+                break;
 
             case 1:
-                if (follower.getPose().getX() > (preload.getX() - 1) && follower.getPose().getY() > (preload.getY() - 1)) {
-                    follower.followPath(score1,true);
+                if(follower.getPose().getX() > (preload.getX() - 1) && follower.getPose().getY() > (preload.getY() -1) ) {
+                    follower.followPath(lineup1, true);
+                    ajuns1 = true;
                     setPathState(2);
                     break;
                 }
             case 2:
-                if (follower.getPose().getX() > (sample1.getX() - 1) && follower.getPose().getY() > (sample1.getY() - 1)) {
-                    setPathState(3);
+                if(follower.getPose().getHeading()<sample1.getHeading()+1){
+                    follower.followPath(score1);
+                    ajuns2 = true;
+                    setPathState(-1);
                     break;
                 }
+
+
         }
     }
 
@@ -179,6 +194,8 @@ public class Specimen extends OpMode {
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
         telemetry.addData("timer", timer.seconds());
+        telemetry.addData("ajuns1", ajuns1);
+        telemetry.addData("ajuns2", ajuns2);
         telemetry.update();
     }
 

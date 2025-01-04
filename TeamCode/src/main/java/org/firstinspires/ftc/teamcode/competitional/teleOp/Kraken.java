@@ -4,9 +4,12 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 import org.firstinspires.ftc.teamcode.constants.OuttakeConstants;
 import org.firstinspires.ftc.teamcode.constants.ServoConstants;
@@ -83,6 +86,24 @@ public class Kraken extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
+            robotConfig.colors();
+            robotConfig.getDistance();
+
+            boolean isYellow = (robotConfig.getCohue() >= 70 && robotConfig.getCohue() <= 90) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.06);
+            boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
+            boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
+            // Display data on Driver Station
+            telemetry.addData("Hue", robotConfig.getCohue());
+            telemetry.addData("Saturation", robotConfig.getSaturation());
+            telemetry.addData("Value", robotConfig.getValue());
+            telemetry.addData("Is Yellow?", isYellow ? "Yes" : "No");
+            telemetry.addData("Is Blue?", isBlue ? "Yes" : "No");
+            telemetry.addData("Is Red?", isRed ? "Yes" : "No");
+            telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
+            telemetry.update();
+
+            sleep(50);
+
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
 

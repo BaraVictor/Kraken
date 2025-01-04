@@ -1,21 +1,25 @@
 package org.firstinspires.ftc.teamcode.configurations;
+import android.graphics.Color;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 public class RobotConfig {
     // Motoare de deplasare
-    public static DcMotor frontLeftMotor;
-    public static DcMotor backLeftMotor;
-    public static DcMotor frontRightMotor;
-    public static DcMotor backRightMotor;
+    public static DcMotorEx frontLeftMotor;
+    public static DcMotorEx backLeftMotor;
+    public static DcMotorEx frontRightMotor;
+    public static DcMotorEx backRightMotor;
 
     // Motoare de outtake
-    public static DcMotor upMotor;
-    public static DcMotor downMotor;
+    public static DcMotorEx upMotor;
+    public static DcMotorEx downMotor;
 
     // Servo outtake
     public Servo outtakeClawServo;
@@ -33,14 +37,18 @@ public class RobotConfig {
     public Servo intakeWristRotServo;
     public Servo intakeClawServo;
 
-    public RobotConfig(HardwareMap hardwareMap) {
-        frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
-        backLeftMotor = hardwareMap.dcMotor.get("backLeftMotor");
-        frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
-        backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
+    float[] hsvValues = {0F, 0F, 0F};
+    private ColorSensor colorSensor;    // REV Color Sensor V3
+    private DistanceSensor distanceSensor; // Proximity sensor
 
-        upMotor = hardwareMap.dcMotor.get("upMotor");
-        downMotor = hardwareMap.dcMotor.get("downMotor");
+    public RobotConfig(HardwareMap hardwareMap) {
+        frontLeftMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "frontLeftMotor");
+        backLeftMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "backLeftMotor");
+        frontRightMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "frontRightMotor");
+        backRightMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "backRightMotor");
+
+        upMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "upMotor");
+        downMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "downMotor");
 
         outtakeClawServo = hardwareMap.get(Servo.class, "outtakeClawServo");
         outtakeWristRotServo = hardwareMap.get(Servo.class, "outtakeWristRotServo");
@@ -56,14 +64,20 @@ public class RobotConfig {
         intakeClawServo = hardwareMap.get(Servo.class, "intakeClawServo");
         intakeWristRotServo = hardwareMap.get(Servo.class, "intakeWristRotServo");
 
-        // Setează direcțiile motoarelor
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotor.Direction.FORWARD);
+        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "colorSensor");
 
-        upMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        downMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        // Setează direcțiile motoarelor
+        frontLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        backLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotorEx.Direction.FORWARD);
+        backRightMotor.setDirection(DcMotorEx.Direction.FORWARD);
+
+        upMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        downMotor.setDirection(DcMotorEx.Direction.REVERSE);
+
+        upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
         upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
@@ -105,6 +119,29 @@ public class RobotConfig {
         intakeWristLeftServo.setPosition(intakeWristLeftServoPosition);
         intakeClawServo.setPosition(intakeClawServoPosition);
         intakeWristRotServo.setPosition(intakeWristRotServoPosition);
+    }
+
+    public void colors (){
+        Color.RGBToHSV(
+                (int) (colorSensor.red() * 255.0 / 1023.0),
+                (int) (colorSensor.green() * 255.0 / 1023.0),
+                (int) (colorSensor.blue() * 255.0 / 1023.0),
+                hsvValues
+        );
+    }
+
+    public double getDistance(){
+        return distanceSensor.getDistance(DistanceUnit.CM);
+    }
+
+    public double getCohue(){
+        return hsvValues[0];
+    }
+    public double getSaturation(){
+        return hsvValues[1];
+    }
+    public double getValue(){
+        return hsvValues[2];
     }
 
 }
