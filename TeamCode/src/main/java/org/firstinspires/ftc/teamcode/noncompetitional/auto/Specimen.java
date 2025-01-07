@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
+import org.firstinspires.ftc.teamcode.constants.ServoConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
@@ -23,25 +25,23 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.Timer;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "SpecimenAuto", group = "B")
+@Autonomous(name = "SpecimenAuto", group = "A")
 public class Specimen extends OpMode {
-
-    private boolean ajuns1 = false;
-    private boolean ajuns2 = false;
     private ElapsedTime timer = new ElapsedTime();
 
     private Follower follower;
     private Timer pathTimer, opmodeTimer;
+    private RobotConfig robotConfig;
     private int pathState;
     private final Pose startPose = new Pose(8, 61.5, Math.toRadians(180));  // pozitie start
-    private final Pose preload = new Pose(40, 60, Math.toRadians(180));
+    private final Pose preload = new Pose(43, 60, Math.toRadians(180));
 
     //sample1
-    private final Pose sample1 = new Pose(31.5, 35, Math.toRadians(315));
-    private final Pose sampleRotate1 = new Pose(31.5, 35, Math.toRadians(220));
+    private final Pose sample1 = new Pose(34.5, 32, Math.toRadians(315));
+    private final Pose sampleRotate1 = new Pose(31.5, 35, Math.toRadians(235));
 
     //sample2
-    private final Pose sample2 = new Pose(30, 20, Math.toRadians(315));
+    private final Pose sample2 = new Pose(33, 19.5, Math.toRadians(315));
     private final Pose sampleRotate2 = new Pose(30, 20, Math.toRadians(220));
 
     //sample3
@@ -59,7 +59,7 @@ public class Specimen extends OpMode {
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path preloadDrop;
-    private PathChain lineup1, lineup2, lineup3, score1, score2, score3, cycle1, cycle2, cycle3, cycle4;
+    private PathChain lineup1, score1, lineup2, lineup3, score2, score3, cycle1, cycle2, cycle3, cycle4;
     private PathChain park;
 
     /** Build the paths for the auto (adds, for example, constant/linear headings while doing paths)
@@ -133,9 +133,6 @@ public class Specimen extends OpMode {
                 .setLinearHeadingInterpolation(fourthDrop.getHeading(), grabSpecimen.getHeading())
                 .build();
 
-
-
-
     }
     /** This switch is called continuously and runs the pathing, at certain points, it triggers the action state.
      * Everytime the switch changes case, it will reset the timer. (This is because of the setPathState() method)
@@ -146,6 +143,24 @@ public class Specimen extends OpMode {
                 - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
                 - Robot Position: "if(follower.getPose().getX() > 36) {}"
                 */
+
+    private boolean hover = false;
+    private boolean deposited = false;
+    private boolean hovering = false;
+    private boolean intaking = false;
+    private boolean transfer = false;
+    private boolean hasTurned = false;
+    private boolean closed = false;
+    private boolean opened = false;
+    private boolean hasTransfered = false;
+
+    private ElapsedTime closingTimer = new ElapsedTime();
+    private ElapsedTime retractTimer = new ElapsedTime();
+    private ElapsedTime hoverTimer = new ElapsedTime();
+    private ElapsedTime intakeTimer = new ElapsedTime();
+    private ElapsedTime turningTimer = new ElapsedTime();
+    private ElapsedTime revolutTimer = new ElapsedTime();
+    private ElapsedTime launchingTimer = new ElapsedTime();
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
@@ -154,23 +169,153 @@ public class Specimen extends OpMode {
                 break;
 
             case 1:
-                if(follower.getPose().getX() > (preload.getX() - 1) && follower.getPose().getY() > (preload.getY() -1) ) {
+                if (follower.getPose().getX() > (preload.getX() - 1) && follower.getPose().getY() > (preload.getY() - 1)) {
                     follower.followPath(lineup1, true);
-                    ajuns1 = true;
+                    turningTimer.reset();
+                    closingTimer.reset();
                     setPathState(2);
-                    break;
                 }
+                break;
             case 2:
-                if(follower.getPose().getHeading()<sample1.getHeading()+1){
-                    follower.followPath(score1);
-                    ajuns2 = true;
-                    setPathState(-1);
-                    break;
+                if (follower.getPose().getX() > (sample1.getX() - 1) && follower.getPose().getY() > (sample1.getY() - 1)) {
+                    hasTurned = true;
                 }
-
-
+                if (!hovering && Math.toDegrees(follower.getPose().getHeading()) > 313 && hasTurned && turningTimer.seconds() > 1.4) {
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_WRIST_DOWN,
+                            ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_45_DEGREES
+                    );
+                    hoverTimer.reset();
+                }
+                if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
+                    hovering = true;
+                    if (!intaking && hoverTimer.seconds() > 1) {
+                        robotConfig.setIntakeServoPositions(
+                                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                ServoConstants.INTAKE_WRIST_DOWN,
+                                ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                ServoConstants.INTAKE_WRIST_ROT_45_DEGREES);
+                        intaking = true;
+                    } else {
+                        if (hoverTimer.seconds() > 1.2 && !hover) {
+                            robotConfig.setIntakeServoPositions(
+                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                    ServoConstants.INTAKE_WRIST_DOWN,
+                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                                    ServoConstants.INTAKE_WRIST_ROT_45_DEGREES
+                            );
+                            if (robotConfig.intakeClawServo.getPosition() > ServoConstants.INTAKE_CLAW_CLOSED_POSITION - 0.1) {
+                                hover = true;
+                            }
+                            if (hover && closingTimer.seconds() > 1.4) {
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_45_DEGREES
+                                );
+                                follower.followPath(score1, true);
+                                hasTurned = false;
+                                launchingTimer.reset();
+                                setPathState(3);
+                            }
+                        }
+                    }
+                }
+                break;
+            case 3:
+                if (follower.getPose().getX() > (sampleRotate1.getX() - 1) && follower.getPose().getY() > (sampleRotate1.getY() - 1)) {
+                    hasTurned = true;
+                }
+                if (hasTurned && Math.toDegrees(follower.getPose().getHeading()) < 260) {
+                    robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_OPEN_POSITION);
+                    follower.followPath(lineup2, true);
+                    hasTurned = false;
+                    hovering = false;
+                    turningTimer.reset();
+                    intaking = false;
+                    closingTimer.reset();
+                    setPathState(4);
+                }
+                break;
+            case 4:
+                if (follower.getPose().getX() > (sample2.getX() - 1) && follower.getPose().getY() > (sample2.getY() - 1)) {
+                    hasTurned = true;
+                }
+                if (!hovering && Math.toDegrees(follower.getPose().getHeading()) > 310 && hasTurned && turningTimer.seconds() > 1.4) {
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_WRIST_DOWN,
+                            ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_45_DEGREES
+                    );
+                    hoverTimer.reset();
+                }
+                if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
+                    hovering = true;
+                    if (!intaking && hoverTimer.seconds() > 1) {
+                        robotConfig.setIntakeServoPositions(
+                                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                ServoConstants.INTAKE_WRIST_DOWN,
+                                ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                ServoConstants.INTAKE_WRIST_ROT_45_DEGREES);
+                        intaking = true;
+                    } else {
+                        if (hoverTimer.seconds() > 1.2 && !hover) {
+                            robotConfig.setIntakeServoPositions(
+                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                    ServoConstants.INTAKE_WRIST_DOWN,
+                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                                    ServoConstants.INTAKE_WRIST_ROT_45_DEGREES
+                            );
+                            if (robotConfig.intakeClawServo.getPosition() > ServoConstants.INTAKE_CLAW_CLOSED_POSITION - 0.1) {
+                                hover = true;
+                            }
+                            if (hover && closingTimer.seconds() > 1.4) {
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_45_DEGREES
+                                );
+                                follower.followPath(score2, true);
+                                hasTurned = false;
+                                launchingTimer.reset();
+                                setPathState(3);
+                            }
+                        }
+                    }
+                }
+                break;
         }
     }
+
 
 
     /** These change the states of the paths and actions
@@ -192,16 +337,16 @@ public class Specimen extends OpMode {
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("heading", (follower.getPose().getHeading()*180)/Math.PI);
         telemetry.addData("timer", timer.seconds());
-        telemetry.addData("ajuns1", ajuns1);
-        telemetry.addData("ajuns2", ajuns2);
+        telemetry.addData("launchingTimer", launchingTimer.seconds());
         telemetry.update();
     }
 
     /** This method is called once at the init of the OpMode. **/
     @Override
     public void init() {
+        robotConfig = new RobotConfig(hardwareMap);
         pathTimer = new Timer();
         opmodeTimer = new Timer();
 
@@ -209,6 +354,8 @@ public class Specimen extends OpMode {
 
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
+
+        resetServosToInit();
 
         buildPaths();
     }
@@ -228,5 +375,24 @@ public class Specimen extends OpMode {
     /** We do not use this because everything should automatically disable **/
     @Override
     public void stop() {
+    }
+
+    private void resetServosToInit () {
+        robotConfig.setOuttakeServoPositions(
+                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+                ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+        );
+        robotConfig.setIntakeServoPositions(
+                ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                ServoConstants.INTAKE_WRIST_UP,
+                ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+        );
     }
 }
