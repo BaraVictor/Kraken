@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.noncompetitional.auto;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,6 +23,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+@Config
 @Autonomous(name = "🐙 SampleAuto 🐙", group = "Auto")
 public class Sample extends OpMode {
 
@@ -40,6 +43,8 @@ public class Sample extends OpMode {
     private boolean hasTransfered = false;
 
     private RobotConfig robotConfig;
+
+    private FtcDashboard dashboard;
 
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
@@ -567,7 +572,7 @@ public class Sample extends OpMode {
                         robotConfig.setIntakeServoPositions(
                                 ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
                                 ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                                ServoConstants.INTAKE_WRIST_UP,
+                                ServoConstants.INTAKE_WRIST_MID,
                                 ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
                                 ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
                                 ServoConstants.INTAKE_CLAW_OPEN_POSITION,
@@ -663,6 +668,10 @@ public class Sample extends OpMode {
 
         resetServosToInit();
 
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25); // Set telemetry update frequency
+        telemetry = dashboard.getTelemetry();
+
         telemetry.addData("Status", "Initialized");
         telemetry.addLine("Motors have been reset");
         telemetry.update();
@@ -696,11 +705,11 @@ public class Sample extends OpMode {
 
         // These loop the movements of the robot
         follower.update();
-        autonomousPathUpdate();
+        //autonomousPathUpdate();
 
 
         // Feedback to Driver Hub
-        telemetry.addData("path state", pathState);
+        /*telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
@@ -713,6 +722,16 @@ public class Sample extends OpMode {
         telemetry.addData("intakeTimer", intakeTimer.seconds());
         telemetry.addData("transfer", transfer);
         telemetry.addData("has turned", hasTurned);
+        telemetry.update();*/
+        dashboard = FtcDashboard.getInstance();
+            dashboard.setTelemetryTransmissionInterval(25);
+            telemetry = dashboard.getTelemetry();
+
+        telemetry.addData("Target Position", targetPosition);
+        telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());
+        telemetry.addData("Right Motor Position", robotConfig.downMotor.getCurrentPosition());
+        telemetry.addData("Left Motor Error", robotConfig.upMotor.getCurrentPosition() - targetPosition);
+        telemetry.addData("Right Motor Error", robotConfig.downMotor.getCurrentPosition() - targetPosition);
         telemetry.update();
     }
 
@@ -751,7 +770,7 @@ public class Sample extends OpMode {
         robotConfig.setIntakeServoPositions(
                 ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
                 ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                ServoConstants.INTAKE_WRIST_UP,
+                ServoConstants.INTAKE_WRIST_MID,
                 ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
                 ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
                 ServoConstants.INTAKE_CLAW_OPEN_POSITION,

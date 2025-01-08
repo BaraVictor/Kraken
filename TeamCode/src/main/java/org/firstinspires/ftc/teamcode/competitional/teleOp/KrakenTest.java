@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.constants.ServoConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
-@Config
 @TeleOp(name = "🐙 Test 🐙", group = "B. Competitional")
 public class KrakenTest extends LinearOpMode {
 

@@ -4,6 +4,7 @@ import android.graphics.Color;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -72,9 +73,6 @@ public class RobotConfig {
         backLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotorEx.Direction.FORWARD);
         backRightMotor.setDirection(DcMotorEx.Direction.FORWARD);
-
-        upMotor.setDirection(DcMotorEx.Direction.REVERSE);
-        downMotor.setDirection(DcMotorEx.Direction.REVERSE);
 
         upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);

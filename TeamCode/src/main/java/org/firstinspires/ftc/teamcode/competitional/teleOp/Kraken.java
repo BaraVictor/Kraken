@@ -16,12 +16,12 @@ import org.firstinspires.ftc.teamcode.constants.ServoConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
-//@Config
+@Config
 @TeleOp(name = "🐙 Kraken 🐙", group = "A. Competitional")
 public class Kraken extends LinearOpMode {
 
     private RobotConfig robotConfig;
-   // private FtcDashboard dashboard;
+    private FtcDashboard dashboard;
 
     private boolean pickupIntakeButtonPressed = false;
     private boolean outtakeClawClosed = true;
@@ -77,9 +77,9 @@ public class Kraken extends LinearOpMode {
 
         updatePIDFController();
 
-//        dashboard = FtcDashboard.getInstance();
-//        dashboard.setTelemetryTransmissionInterval(25);
-//        telemetry = dashboard.getTelemetry();
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25);
+        telemetry = dashboard.getTelemetry();
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -101,8 +101,6 @@ public class Kraken extends LinearOpMode {
             telemetry.addData("Is Red?", isRed ? "Yes" : "No");
             telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
             telemetry.update();
-
-            sleep(50);
 
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
@@ -176,10 +174,10 @@ public class Kraken extends LinearOpMode {
 
             updatePIDFController();
 
-//            dashboard = FtcDashboard.getInstance();
-//            dashboard.setTelemetryTransmissionInterval(25);
-//            telemetry = dashboard.getTelemetry();
-            telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
+            dashboard = FtcDashboard.getInstance();
+            dashboard.setTelemetryTransmissionInterval(25);
+            telemetry = dashboard.getTelemetry();
+          /*  telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
             telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
             telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
             telemetry.addData("Outtake Elbow Right Position", robotConfig.outtakeElbowRightServo.getPosition());
@@ -195,7 +193,7 @@ public class Kraken extends LinearOpMode {
             telemetry.addData("Outtake State", currentOuttakeState);
             telemetry.addData("Intake State", currentIntakeState);
             telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
-            telemetry.addData("Intake Claw Closed", intakeClawClosed);
+            telemetry.addData("Intake Claw Closed", intakeClawClosed);*/
             telemetry.addData("Target Position", targetPosition);
             telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());
             telemetry.addData("Right Motor Position", robotConfig.downMotor.getCurrentPosition());
@@ -600,7 +598,7 @@ public class Kraken extends LinearOpMode {
         robotConfig.setIntakeServoPositions(
                 ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
                 ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                ServoConstants.INTAKE_WRIST_UP,
+                ServoConstants.INTAKE_WRIST_MID,
                 ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
                 ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
                 ServoConstants.INTAKE_CLAW_OPEN_POSITION,
