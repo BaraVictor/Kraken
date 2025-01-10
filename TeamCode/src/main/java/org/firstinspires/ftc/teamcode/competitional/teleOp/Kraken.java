@@ -33,10 +33,10 @@ public class Kraken extends LinearOpMode {
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
 
-    public static double P = 0.01;
-    public static double I = 0.004;
-    public static double D = 0;
-    public static double F = 0.001;
+    public static double P = 0.0125;
+    public static double I = 0;
+    public static double D = 0.00005;
+    public static double F = 0.01;
     public static double K =0;
 
     public static double targetPosition = 0;
@@ -77,11 +77,11 @@ public class Kraken extends LinearOpMode {
 
         updatePIDFController();
 
-        dashboard = FtcDashboard.getInstance();
-        dashboard.setTelemetryTransmissionInterval(25);
-        telemetry = dashboard.getTelemetry();
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+//        dashboard = FtcDashboard.getInstance();
+//        dashboard.setTelemetryTransmissionInterval(25);
+//        telemetry = dashboard.getTelemetry();
+//        telemetry.addData("Status", "Initialized");
+//        telemetry.update();
 
         waitForStart();
 
@@ -238,7 +238,7 @@ public class Kraken extends LinearOpMode {
                                 ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                         );
                         setIntakeState(IntakeState.START);
-                        sleep(100); //sters
+                        sleep(100);
                         setOuttakeState(OuttakeState.PLACE_SAMPLE);
                     }
                 }

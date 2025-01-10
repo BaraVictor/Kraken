@@ -6,7 +6,7 @@ public class ServoConstants {
     public static final double OUTTAKE_CLAW_OPEN_POSITION = 0.55;
 
     // Outtake Wrist Rotation Servo Positions
-    public static final double OUTTAKE_WRIST_ROT_0_DEGREES = 0.6264;
+    public static final double OUTTAKE_WRIST_ROT_0_DEGREES = 0.6264   ;
     public static final double OUTTAKE_WRIST_ROT_90_DEGREES = 0.3402;
     public static final double OUTTAKE_WRIST_ROT_180_DEGREES = 0.0639;
 

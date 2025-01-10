@@ -69,8 +69,10 @@ public class Specimen extends OpMode {
     private final Pose sample3 = new Pose(33.2, 6.5, Math.toRadians(315));
     private final Pose sampleRotate3 = new Pose(25, 10, Math.toRadians(230));
 
+    private final Pose sampleRotateControl3 = new Pose(60, 50, Math.toRadians(0));
+
     //specimen grab position from human player
-    private final Pose grabSpecimen = new Pose(16, 25, Math.toRadians(0));
+    private final Pose grabSpecimen = new Pose(17, 25, Math.toRadians(0));
 
     //placing positions
     private final Pose firstDrop = new Pose(38, 62, Math.toRadians(180));
@@ -124,7 +126,7 @@ public class Specimen extends OpMode {
         // time to start cycling
 
         grab1 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(sampleRotate3), new Point(grabSpecimen)))
+                .addPath(new BezierCurve(new Point(sampleRotate3), new Point(sampleRotateControl3), new Point(grabSpecimen)))
                 .setLinearHeadingInterpolation(sampleRotate3.getHeading(), grabSpecimen.getHeading())
                 .build();
 

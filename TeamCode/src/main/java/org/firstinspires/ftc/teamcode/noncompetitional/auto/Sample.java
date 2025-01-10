@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Config
+//@Config
 @Autonomous(name = "🐙 SampleAuto 🐙", group = "Auto")
 public class Sample extends OpMode {
 
@@ -49,11 +49,10 @@ public class Sample extends OpMode {
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
 
-    public static double P = 0.006;
-
+    public static double P = 0.0125;
     public static double I = 0;
-    public static double D = 0;
-    public static double F = 0.07;
+    public static double D = 0.00005;
+    public static double F = 0.01;
     public static double K = 0;
     public static double targetPosition = 0;
 
@@ -77,9 +76,9 @@ public class Sample extends OpMode {
     private final Pose scorePos2 = new Pose(20.5, 129, Math.toRadians(318));
     private final Pose scorePos3 = new Pose(21, 129, Math.toRadians(318));
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));
-    private final Pose preload = new Pose(20, 126, Math.toRadians(318));
-    private final Pose sample1 = new Pose(22.5, 126, Math.toRadians(357));
-    private final Pose sample2 = new Pose(22.5, 131, Math.toRadians(6.5));
+    private final Pose preload = new Pose(21, 126, Math.toRadians(318));
+    private final Pose sample1 = new Pose(23.5, 126, Math.toRadians(357));
+    private final Pose sample2 = new Pose(23.5, 131, Math.toRadians(6.5));
     private final Pose sample3 = new Pose(23, 139, Math.toRadians(15));
     private final Pose park = new Pose(80, 95, Math.toRadians(270));
     private final Pose parkFinal = new Pose(80, 10 , Math.toRadians(90));
@@ -668,9 +667,9 @@ public class Sample extends OpMode {
 
         resetServosToInit();
 
-        dashboard = FtcDashboard.getInstance();
+        /*dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(25); // Set telemetry update frequency
-        telemetry = dashboard.getTelemetry();
+        telemetry = dashboard.getTelemetry();*/
 
         telemetry.addData("Status", "Initialized");
         telemetry.addLine("Motors have been reset");
@@ -705,7 +704,7 @@ public class Sample extends OpMode {
 
         // These loop the movements of the robot
         follower.update();
-        //autonomousPathUpdate();
+        autonomousPathUpdate();
 
 
         // Feedback to Driver Hub
