@@ -72,14 +72,15 @@ public class Sample extends OpMode {
      */
 
 
+    private final Pose startPose = new Pose(7, 112, Math.toRadians(270));
+
     private final Pose score = new Pose(21, 128, Math.toRadians(318));
     private final Pose scorePos2 = new Pose(20.5, 129, Math.toRadians(318));
     private final Pose scorePos3 = new Pose(21, 129, Math.toRadians(318));
-    private final Pose startPose = new Pose(7, 112, Math.toRadians(270));
     private final Pose preload = new Pose(21, 126, Math.toRadians(318));
     private final Pose sample1 = new Pose(23.5, 126, Math.toRadians(357));
     private final Pose sample2 = new Pose(23.5, 131, Math.toRadians(6.5));
-    private final Pose sample3 = new Pose(23, 139, Math.toRadians(15));
+    private final Pose sample3 = new Pose(25.5, 134, Math.toRadians(28));
     private final Pose park = new Pose(80, 95, Math.toRadians(270));
     private final Pose parkFinal = new Pose(80, 10 , Math.toRadians(90));
 
@@ -166,7 +167,7 @@ public class Sample extends OpMode {
                         robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
                         robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
                         robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
-                        if(revolutTimer.seconds()>2){
+                        if(revolutTimer.seconds()>2.2){
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
                                 deposited = true;
@@ -722,9 +723,9 @@ public class Sample extends OpMode {
         telemetry.addData("transfer", transfer);
         telemetry.addData("has turned", hasTurned);
         telemetry.update();*/
-        dashboard = FtcDashboard.getInstance();
-            dashboard.setTelemetryTransmissionInterval(25);
-            telemetry = dashboard.getTelemetry();
+//        dashboard = FtcDashboard.getInstance();
+//            dashboard.setTelemetryTransmissionInterval(25);
+//            telemetry = dashboard.getTelemetry();
 
         telemetry.addData("Target Position", targetPosition);
         telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());

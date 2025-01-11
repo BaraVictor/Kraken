@@ -199,6 +199,7 @@ public class Kraken extends LinearOpMode {
             telemetry.addData("Right Motor Position", robotConfig.downMotor.getCurrentPosition());
             telemetry.addData("Left Motor Error", robotConfig.upMotor.getCurrentPosition() - targetPosition);
             telemetry.addData("Right Motor Error", robotConfig.downMotor.getCurrentPosition() - targetPosition);
+            telemetry.addData("P", P);
             telemetry.update();
         }
     }
@@ -247,7 +248,7 @@ public class Kraken extends LinearOpMode {
                 }
                 break;
             case PLACE_SAMPLE:
-                if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 500) {
+                if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 100) {
                     OuttakeServoTimer.reset();
                     setOuttakeState(OuttakeState.ROTATE_SAMPLE);
                 }
@@ -279,7 +280,7 @@ public class Kraken extends LinearOpMode {
                 }
                 break;
             case ROTATE_SAMPLE:
-                if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 500) {
+                if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 100) {
                     OuttakeServoTimer.reset();
                     setOuttakeState(OuttakeState.PLACE_SAMPLE);
                 }

@@ -8,7 +8,7 @@ public class OuttakeConstants {
 
     // level 2 hang
     public static final int OUTTAKE_HANG_EXTENDED_POSITION = 1450;
-    public static final int OUTTAKE_HANG_RETRACTED_POSITION = 700;
+    public static final int OUTTAKE_HANG_RETRACTED_POSITION = 1000;
 
     /**
      * de modificat OUTTAKE_BOTTOM_SAMPLE_BOX = 650;
