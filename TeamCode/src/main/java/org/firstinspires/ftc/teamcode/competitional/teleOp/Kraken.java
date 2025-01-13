@@ -266,7 +266,7 @@ public class Kraken extends LinearOpMode {
                     targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
                 }
                 else if(gamepad1.dpad_right) {
-                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
+                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR ;
                 }
                 else if(gamepad1.dpad_left) {
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
