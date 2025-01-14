@@ -175,21 +175,22 @@ public class HumanSample extends OpMode {
                         robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
                         robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
                         robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
-                        if(revolutTimer.seconds()>2.2){
+                        if(revolutTimer.seconds()>2.3){
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
                                 deposited = true;
-                                if (retractTimer.seconds() > 2.5) {
-                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-
-                                    //aici incep schimbarile pt al doilea sample
-
-                                    if (robotConfig.upMotor.getCurrentPosition() < targetPosition + 15) {
-                                        follower.followPath(humanPickup, true);        // was first pickup
-                                        turningTimer.reset();
-                                        setPathState(2);
+                                if (retractTimer.seconds() > 2.5){
+                                    robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
+                                    robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
+                                    if (retractTimer.seconds() > 2.7) {
+                                        targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                        if (robotConfig.upMotor.getCurrentPosition() < targetPosition + 15) {
+                                            follower.followPath(humanPickup, true);        // was first pickup
+                                            turningTimer.reset();
+                                            setPathState(2);
+                                        }
                                     }
-                                }
+                            }
                             }
                         }
                     }
@@ -318,9 +319,13 @@ public class HumanSample extends OpMode {
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
                                 opened = true;
-                                if (retractTimer.seconds() > 2.8) {
-                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                                    deposited = true;
+                                if (retractTimer.seconds() > 2.7) {
+                                    robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
+                                    robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
+                                    if (retractTimer.seconds() > 2.9) {
+                                        targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                        deposited = true;
+                                    }
                                 }
                             }
                         }
@@ -459,9 +464,13 @@ public class HumanSample extends OpMode {
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
                                 opened = true;
-                                if (retractTimer.seconds() > 2.8) {
-                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                                    deposited = true;
+                                if (retractTimer.seconds() > 2.7) {
+                                    robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
+                                    robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
+                                    if (retractTimer.seconds() > 2.8) {
+                                        targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                        deposited = true;
+                                    }
                                 }
                             }
                         }
@@ -605,9 +614,13 @@ public class HumanSample extends OpMode {
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
                                 opened = true;
-                                if (retractTimer.seconds() > 2.8) {
-                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                                    deposited = true;
+                                if (retractTimer.seconds() > 2.7) {
+                                    robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
+                                    robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
+                                    if (retractTimer.seconds() > 2.8) {
+                                        targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                        deposited = true;
+                                    }
                                 }
                             }
                         }
@@ -751,9 +764,13 @@ public class HumanSample extends OpMode {
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
                                 opened = true;
-                                if (retractTimer.seconds() > 2.8) {
-                                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                                    deposited = true;
+                                if (retractTimer.seconds() > 2.7) {
+                                    robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
+                                    robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
+                                    if (retractTimer.seconds() > 2.8) {
+                                        targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                                        deposited = true;
+                                    }
                                 }
                             }
                         }
