@@ -11,7 +11,7 @@ public class ServoConstants {
     public static final double OUTTAKE_WRIST_ROT_180_DEGREES = 0.756;
 
     // Outtake Wrist Y Servo Positions
-    public static final double OUTTAKE_WRIST_Y_TRANSFER_POSITION = 0.7226;
+    public static final double OUTTAKE_WRIST_Y_TRANSFER_POSITION = 0.65;
     public static final double OUTTAKE_WRIST_Y_PLACE_POSITION = 0.4;
     public static final double OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION = 0.2034;
     public static final double OUTTAKE_WRIST_Y_PLACE_SPECIMEN_POSITION = 0.3129;

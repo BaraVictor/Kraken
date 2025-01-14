@@ -93,14 +93,14 @@ public class Kraken extends LinearOpMode {
             boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
             boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
             // Display data on Driver Station
-            telemetry.addData("Hue", robotConfig.getCohue());
-            telemetry.addData("Saturation", robotConfig.getSaturation());
-            telemetry.addData("Value", robotConfig.getValue());
-            telemetry.addData("Is Yellow?", isYellow ? "Yes" : "No");
-            telemetry.addData("Is Blue?", isBlue ? "Yes" : "No");
-            telemetry.addData("Is Red?", isRed ? "Yes" : "No");
-            telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
-            telemetry.update();
+//            telemetry.addData("Hue", robotConfig.getCohue());
+//            telemetry.addData("Saturation", robotConfig.getSaturation());
+//            telemetry.addData("Value", robotConfig.getValue());
+//            telemetry.addData("Is Yellow?", isYellow ? "Yes" : "No");
+//            telemetry.addData("Is Blue?", isBlue ? "Yes" : "No");
+//            telemetry.addData("Is Red?", isRed ? "Yes" : "No");
+//            telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
+//            telemetry.update();
 
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
@@ -120,7 +120,7 @@ public class Kraken extends LinearOpMode {
             }
 
             robotConfig.upMotor.setPower(powerUp);
-            robotConfig.downMotor.setPower(powerDown);
+            robotConfig.downMotor.setPower(powerUp);
 
             if(-gamepad1.left_stick_y > 0.1) {
                 targetPosition +=10;
@@ -174,9 +174,9 @@ public class Kraken extends LinearOpMode {
 
             updatePIDFController();
 
-            dashboard = FtcDashboard.getInstance();
-            dashboard.setTelemetryTransmissionInterval(25);
-            telemetry = dashboard.getTelemetry();
+//            dashboard = FtcDashboard.getInstance();
+//            dashboard.setTelemetryTransmissionInterval(25);
+//            telemetry = dashboard.getTelemetry();
           /*  telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
             telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
             telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
@@ -196,10 +196,14 @@ public class Kraken extends LinearOpMode {
             telemetry.addData("Intake Claw Closed", intakeClawClosed);*/
             telemetry.addData("Target Position", targetPosition);
             telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());
-            telemetry.addData("Right Motor Position", robotConfig.downMotor.getCurrentPosition());
+
+
             telemetry.addData("Left Motor Error", robotConfig.upMotor.getCurrentPosition() - targetPosition);
             telemetry.addData("Right Motor Error", robotConfig.downMotor.getCurrentPosition() - targetPosition);
             telemetry.addData("P", P);
+
+            telemetry.addData("Right Motor Power", robotConfig.downMotor.getPower());
+            telemetry.addData("Left Motor Power", robotConfig.upMotor.getPower());
             telemetry.update();
         }
     }
@@ -464,7 +468,7 @@ public class Kraken extends LinearOpMode {
                     rot0 = false;
                 }
 
-                if(gamepad1.y && yButtonPressed.milliseconds() > 250){
+                if(gamepad1.y && yButtonPressed.milliseconds() > 100){
                     yButtonPressed.reset();
                     if(!intakeDown){
                         if(rot0){
