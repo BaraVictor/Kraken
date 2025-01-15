@@ -73,7 +73,7 @@ public class HumanSample extends OpMode {
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));
 
     // have a single score pose
-    private final Pose score = new Pose(19, 127, Math.toRadians(318)); //old  Pose(21, 129)
+    private final Pose score = new Pose(20, 126, Math.toRadians(318)); //old  Pose(21, 129)
 
     private final Pose preload = new Pose(21, 126, Math.toRadians(318));
     private final Pose humanSample = new Pose(10, 40, Math.toRadians(270));
@@ -198,7 +198,7 @@ public class HumanSample extends OpMode {
                 break;
 
             case 2:
-                if (follower.getPose().getX() > (humanSample.getX() - 1) && follower.getPose().getY() > (humanSample.getY() - 1)) {
+                if (follower.getPose().getX() > (humanSample.getX() - 0.5) && follower.getPose().getY() > (humanSample.getY() - 0.5)) {
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -233,7 +233,7 @@ public class HumanSample extends OpMode {
                                 ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
                         intaking = true;
                     } else {
-                        if (hoverTimer.seconds() > 1.2) {
+                        if (hoverTimer.seconds() > 1.5) {
                             robotConfig.setIntakeServoPositions(
                                     ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                                     ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
@@ -256,7 +256,7 @@ public class HumanSample extends OpMode {
                 break;
 
             case 3:
-                if (follower.getPose().getX() > (humanSample.getX() - 1) && follower.getPose().getY() > (humanSample.getY() - 1)) {
+                if (follower.getPose().getX() > (score.getX() - 1) && follower.getPose().getY() > (score.getY() - 1)) {
                     if(!transfer) {
                         robotConfig.setOuttakeServoPositions(
                                 ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
@@ -338,7 +338,7 @@ public class HumanSample extends OpMode {
                     hovering = false;
                     intaking = false;
                     turningTimer.reset();
-                    follower.followPath(secondPickup, true);
+                    follower.followPath(firstPickup, true);
                     setPathState(4);
                 }
                 break;
@@ -486,7 +486,7 @@ public class HumanSample extends OpMode {
                     follower.followPath(secondPickup, true);
                     setPathState(6);
                 }
-                break;
+
 
             case 6:
                 if (follower.getPose().getX() > (sample2.getX() - 1) && follower.getPose().getY() > (sample2.getY() - 1)) {
