@@ -222,7 +222,7 @@ public class HumanSample extends OpMode {
                 }
                 if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
                     hovering = true;
-                    if (!intaking) {
+                    if (!intaking && hoverTimer.seconds()>0.5) {
                         robotConfig.setIntakeServoPositions(
                                 ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                                 ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
@@ -368,7 +368,7 @@ public class HumanSample extends OpMode {
                 }
                 if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
                     hovering = true;
-                    if (!intaking) {
+                    if (!intaking && hoverTimer.seconds()>0.5) {
                         robotConfig.setIntakeServoPositions(
                                 ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                                 ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
@@ -513,7 +513,7 @@ public class HumanSample extends OpMode {
                 }
                 if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
                     hovering = true;
-                    if (!intaking) {
+                    if (!intaking && hoverTimer.seconds()>0.5) {
                         robotConfig.setIntakeServoPositions(
                                 ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                                 ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
@@ -787,7 +787,6 @@ public class HumanSample extends OpMode {
                     setPathState(-1);
                 }
                 break;
-
         }
     }
     /** These change the states of the paths and actions
