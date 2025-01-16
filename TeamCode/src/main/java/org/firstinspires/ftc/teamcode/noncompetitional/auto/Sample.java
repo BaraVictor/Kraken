@@ -49,7 +49,7 @@ public class Sample extends OpMode {
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
 
-    public static double P = 0.0125;
+    public static double P = 0.0128;
     public static double I = 0;
     public static double D = 0.00005;
     public static double F = 0.01;
@@ -74,14 +74,14 @@ public class Sample extends OpMode {
 
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));
 
-    private final Pose score = new Pose(21, 128, Math.toRadians(318));
-    private final Pose scorePos2 = new Pose(20.5, 129, Math.toRadians(318));
+    private final Pose score = new Pose(21, 129, Math.toRadians(318));
+    private final Pose scorePos2 = new Pose(21, 129, Math.toRadians(318));
     private final Pose scorePos3 = new Pose(21, 129, Math.toRadians(318));
     private final Pose preload = new Pose(21, 126, Math.toRadians(318));
     private final Pose sample1 = new Pose(23.5, 126, Math.toRadians(357));
     private final Pose sample2 = new Pose(23.5, 131, Math.toRadians(6.5));
-    private final Pose sample3 = new Pose(25.5, 134, Math.toRadians(28));
-    private final Pose park = new Pose(80, 95, Math.toRadians(270));
+    private final Pose sample3 = new Pose(25.5, 134, Math.toRadians(25));
+    private final Pose park = new Pose(80, 95, Math.toRadians(90));
     private final Pose parkFinal = new Pose(80, 10 , Math.toRadians(90));
 
     private Path scorePreload;
@@ -163,18 +163,18 @@ public class Sample extends OpMode {
                         robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION);
                         robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                     }
-                    if (revolutTimer.seconds()>2.0) {
+                    if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 50) {
                         robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
                         robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
-                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
-                        if(revolutTimer.seconds()>2.3){
+                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION);
+                        if(revolutTimer.seconds()>2.4){
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
                                 deposited = true;
-                                if(retractTimer.seconds()> 2.5) {
+                                if(retractTimer.seconds()> 2.8) {
                                     robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
                                     robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
-                                    if (retractTimer.seconds() > 2.7) {
+                                    if (retractTimer.seconds() > 3) {
                                         targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
                                         if (robotConfig.upMotor.getCurrentPosition() < targetPosition + 15) {
                                             follower.followPath(firstPickup, true);
@@ -302,10 +302,10 @@ public class Sample extends OpMode {
                             robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                         }
                     }
-                    if (revolutTimer.seconds()>2.1) {
+                    if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 50) {
                         robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
                         robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
-                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
+                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION);
                         if(revolutTimer.seconds()>2.5){
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
@@ -453,10 +453,10 @@ public class Sample extends OpMode {
                             robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                         }
                     }
-                    if (revolutTimer.seconds()>2.1) {
+                    if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 50) {
                         robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
                         robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
-                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
+                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION);
                         if(revolutTimer.seconds()>2.5){
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
@@ -581,7 +581,7 @@ public class Sample extends OpMode {
                         );
                         closed = true;
                     }
-                    if (intakeTimer.seconds() > .9) {
+                    if (intakeTimer.seconds() > 1.1) {
                         robotConfig.setIntakeServoPositions(
                                 ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
                                 ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
@@ -603,10 +603,10 @@ public class Sample extends OpMode {
                             robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                         }
                     }
-                    if (revolutTimer.seconds()>2.1) {
+                    if (robotConfig.upMotor.getCurrentPosition() > targetPosition - 50) {
                         robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION);
                         robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION);
-                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION);
+                        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION);
                         if(revolutTimer.seconds()>2.5){
                             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
@@ -631,6 +631,14 @@ public class Sample extends OpMode {
                     intaking = false;
                     turningTimer.reset();
                     follower.followPath(parkPath,true);
+
+                    robotConfig.setOuttakeServoPositions(
+                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                            ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
+                    );
                     setPathState(-1);
                 }
                 break;

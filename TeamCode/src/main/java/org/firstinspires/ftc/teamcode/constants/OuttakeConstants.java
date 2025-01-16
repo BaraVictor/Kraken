@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.constants;
 public class OuttakeConstants {
 
 
-    public static final int OUTTAKE_MIN_POSITION = -15;
+    public static final int OUTTAKE_MIN_POSITION = -5;
     public static final int OUTTAKE_MAX_POSITION = 1450;
 
     // level 2 hang
