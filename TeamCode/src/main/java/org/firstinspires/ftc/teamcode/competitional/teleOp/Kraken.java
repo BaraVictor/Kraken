@@ -119,10 +119,15 @@ public class Kraken extends LinearOpMode {
 //            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
 //                powerDown = 0;
 //            }
+            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>0){
+                robotConfig.upMotor.setPower(-0.9);
+                robotConfig.downMotor.setPower(-0.9);
 
-            robotConfig.upMotor.setPower(powerUp);
-            robotConfig.downMotor.setPower(powerUp);
-
+            }
+            else {
+                robotConfig.upMotor.setPower(powerUp);
+                robotConfig.downMotor.setPower(powerUp);
+            }
             if(-gamepad1.left_stick_y > 0.1) {
                 targetPosition +=10;
             }
