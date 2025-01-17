@@ -23,6 +23,9 @@ public class Kraken extends LinearOpMode {
     private RobotConfig robotConfig;
     private FtcDashboard dashboard;
 
+    private boolean isAreSlidesStopped = true;
+    private boolean areSlidesDown = true;
+    private boolean da = false;
     private boolean pickupIntakeButtonPressed = false;
     private boolean outtakeClawClosed = true;
     private boolean outtakeClawOpened = true;
@@ -33,13 +36,13 @@ public class Kraken extends LinearOpMode {
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
 
-    public static double P = 0.0128; //was 0.0125
+    public static double P = 0.0128; //was 0.0128
     public static double I = 0;
     public static double D = 0.00005; //was 0.00005
-    public static double F = 0.01                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ;      //was 0.01
+    public static double F = 0.01;    //was                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ;      //was 0.01
     public static double K =0;
 
-    public static double targetPosition = 0;
+    public static double targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
 
     private enum OuttakeState {
         START,
@@ -87,12 +90,12 @@ public class Kraken extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            robotConfig.colors();
-            robotConfig.getDistance();
-
-            boolean isYellow = (robotConfig.getCohue() >= 70 && robotConfig.getCohue() <= 90) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.06);
-            boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
-            boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
+//            robotConfig.colors();
+//            robotConfig.getDistance();
+//
+//            boolean isYellow = (robotConfig.getCohue() >= 70 && robotConfig.getCohue() <= 90) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.06);
+//            boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
+//            boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
             // Display data on Driver Station
 //            telemetry.addData("Hue", robotConfig.getCohue());
 //            telemetry.addData("Saturation", robotConfig.getSaturation());
@@ -106,8 +109,8 @@ public class Kraken extends LinearOpMode {
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
 
-            pidfControllerDown.setTargetPosition(targetPosition);
-            pidfControllerDown.updatePosition(robotConfig.downMotor.getCurrentPosition());
+//            pidfControllerDown.setTargetPosition(targetPosition);
+//            pidfControllerDown.updatePosition(robotConfig.downMotor.getCurrentPosition());
 
             double powerUp = pidfControllerUp.runPIDF() + K;
 //            double powerDown = pidfControllerDown.runPIDF() + K;
@@ -119,7 +122,20 @@ public class Kraken extends LinearOpMode {
 //            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
 //                powerDown = 0;
 //            }
-            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>0){
+            if(robotConfig.upMotor.getCurrentPosition()>10)
+                areSlidesDown = false;
+            if(robotConfig.upMotor.getVelocity()<0.1 && robotConfig.upMotor.getCurrentPosition()<10){
+                RobotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                RobotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                RobotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                RobotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                areSlidesDown = true;
+            }
+            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && areSlidesDown){
+                robotConfig.upMotor.setPower(0);
+                robotConfig.downMotor.setPower(0);
+            }
+            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>10){
                 robotConfig.upMotor.setPower(-0.9);
                 robotConfig.downMotor.setPower(-0.9);
 
@@ -128,21 +144,13 @@ public class Kraken extends LinearOpMode {
                 robotConfig.upMotor.setPower(powerUp);
                 robotConfig.downMotor.setPower(powerUp);
             }
+            robotConfig.upMotor.setPower(powerUp);
+            robotConfig.downMotor.setPower(powerUp);
             if(-gamepad1.left_stick_y > 0.1) {
                 targetPosition +=10;
             }
             else if(-gamepad1.left_stick_y < -0.1) {
                 targetPosition -=10;
-            }
-
-            if(gamepad1.share){
-                robotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-                robotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-                robotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-                robotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-                robotConfig.upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-                robotConfig.downMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-                targetPosition=0;
             }
 
             if(gamepad2.y) {
@@ -200,14 +208,18 @@ public class Kraken extends LinearOpMode {
             telemetry.addData("Outtake State", currentOuttakeState);
             telemetry.addData("Intake State", currentIntakeState);
             telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
-            telemetry.addData("Intake Claw Closed", intakeClawClosed);*/
+            telemetry.addData("Intake Claw Closed", intakeClawClosed);
+
+           */
+            telemetry.addData("velocity", RobotConfig.upMotor.getVelocity());
+            telemetry.addData("da", da);
+            telemetry.addData("areSlidesDown", areSlidesDown);
             telemetry.addData("Target Position", targetPosition);
             telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());
 
 
             telemetry.addData("Left Motor Error", robotConfig.upMotor.getCurrentPosition() - targetPosition);
             telemetry.addData("Right Motor Error", robotConfig.downMotor.getCurrentPosition() - targetPosition);
-            telemetry.addData("P", P);
 
             telemetry.addData("Right Motor Power", robotConfig.downMotor.getPower());
             telemetry.addData("Left Motor Power", robotConfig.upMotor.getPower());
@@ -239,6 +251,26 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
                         ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                 );
+                if(gamepad2.left_bumper){
+                    areSlidesDown = false;
+                    setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
+                }
+                if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                }
+                else if(gamepad1.dpad_up) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
+                }
+                else if(gamepad1.dpad_right) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR ;
+                }
+                else if(gamepad1.dpad_left) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
+                }
                 break;
             case PICKUP:
                 robotConfig.setOuttakeServoPositions(
@@ -264,6 +296,7 @@ public class Kraken extends LinearOpMode {
                     }
                 }
                 if(gamepad2.left_bumper){
+                    areSlidesDown = false;
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
                 }
                 break;
@@ -280,15 +313,19 @@ public class Kraken extends LinearOpMode {
                             ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
                     );
                 if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
                 }
                 else if(gamepad1.dpad_up) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
                 }
                 else if(gamepad1.dpad_right) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR ;
                 }
                 else if(gamepad1.dpad_left) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 if(gamepad1.left_trigger > 0.1){
@@ -296,6 +333,7 @@ public class Kraken extends LinearOpMode {
                     outtakeClawServoTimer.reset();
                 }
                 if(gamepad2.left_bumper){
+                    areSlidesDown = false;
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
                 }
                 break;
@@ -312,15 +350,19 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
                 );
                 if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
                 }
                 else if(gamepad1.dpad_up) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
                 }
                 else if(gamepad1.dpad_right) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
                 }
                 else if(gamepad1.dpad_left) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 if(gamepad1.left_trigger > 0.1){
@@ -336,16 +378,20 @@ public class Kraken extends LinearOpMode {
                     robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                 }
                 if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
                     setOuttakeState(OuttakeState.INIT);
                 }
                 else if(gamepad1.dpad_up) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
                 }
                 else if(gamepad1.dpad_right) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
                 }
                 else if(gamepad1.dpad_left) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
 
@@ -388,16 +434,8 @@ public class Kraken extends LinearOpMode {
                     setOuttakeState(OuttakeState.PLACE_SPECIMENE);
                 }
                 if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                }
-                else if(gamepad1.dpad_up) {
-                    targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
-                }
-                else if(gamepad1.dpad_right) {
-                    targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                }
-                else if(gamepad1.dpad_left) {
-                    targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 break;
             case PLACE_SPECIMENE:
@@ -411,6 +449,7 @@ public class Kraken extends LinearOpMode {
                     );
                 }
                 if(gamepad2.left_trigger>0.1){
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
                 }
                 if(gamepad2.right_trigger>0.1){
@@ -433,16 +472,8 @@ public class Kraken extends LinearOpMode {
                 }
 
                 if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                }
-                else if(gamepad1.dpad_up) {
-                    targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
-                }
-                else if(gamepad1.dpad_right) {
-                    targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                }
-                else if(gamepad1.dpad_left) {
-                    targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 break;
             default:
