@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.Timer;
 
-@Autonomous(name = "🐙 SampleAutocoloe 🐙", group = "Auto")
+@Autonomous(name = "🐙 SampleAutoColor 🐙", group = "Auto")
 public class SampleColour extends OpMode {
 
     private ElapsedTime retractTimer = new ElapsedTime();

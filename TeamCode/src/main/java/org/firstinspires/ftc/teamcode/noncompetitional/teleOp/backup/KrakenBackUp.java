@@ -1,15 +1,12 @@
-package org.firstinspires.ftc.teamcode.competitional.teleOp;
+package org.firstinspires.ftc.teamcode.noncompetitional.teleOp.backup;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 import org.firstinspires.ftc.teamcode.constants.OuttakeConstants;
 import org.firstinspires.ftc.teamcode.constants.ServoConstants;
@@ -17,12 +14,15 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
 @Config
-@TeleOp(name = "🐙 KrakenTest 🐙", group = "A. Competitional")
-public class KrakenTest extends LinearOpMode {
+@TeleOp(name = "KrakenBackUp", group = "Kraken BackUp")
+public class KrakenBackUp extends LinearOpMode {
 
     private RobotConfig robotConfig;
     private FtcDashboard dashboard;
 
+    private boolean isAreSlidesStopped = true;
+    private boolean areSlidesDown = true;
+    private boolean da = false;
     private boolean pickupIntakeButtonPressed = false;
     private boolean outtakeClawClosed = true;
     private boolean outtakeClawOpened = true;
@@ -33,13 +33,13 @@ public class KrakenTest extends LinearOpMode {
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
 
-    public static double P = 0.0125;
+    public static double P = 0.0128; //was 0.0128
     public static double I = 0;
-    public static double D = 0.00005;
-    public static double F = 0.01;
-    public static double K = 0;
+    public static double D = 0.00005; //was 0.00005
+    public static double F = 0.01;    //was                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ;      //was 0.01
+    public static double K =0;
 
-    public static double targetPosition = 0;
+    public static double targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
 
     private enum OuttakeState {
         START,
@@ -66,6 +66,7 @@ public class KrakenTest extends LinearOpMode {
     private ElapsedTime OuttakeServoTimer = new ElapsedTime();
     private ElapsedTime outtakeClawServoTimer = new ElapsedTime();
     private ElapsedTime yButtonPressed = new ElapsedTime();
+    private ElapsedTime specimenTimer = new ElapsedTime();
     private OuttakeState currentOuttakeState = OuttakeState.START;
     private IntakeState currentIntakeState = IntakeState.START;
 
@@ -77,70 +78,82 @@ public class KrakenTest extends LinearOpMode {
 
         updatePIDFController();
 
-//        dashboard = FtcDashboard.getInstance();
-//        dashboard.setTelemetryTransmissionInterval(25);
-//        telemetry = dashboard.getTelemetry();
-//        telemetry.addData("Status", "Initialized");
-//        telemetry.update();
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25);
+        telemetry = dashboard.getTelemetry();
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
 
         waitForStart();
 
         while (opModeIsActive()) {
-            robotConfig.colors();
-            robotConfig.getDistance();
-
-            boolean isYellow = (robotConfig.getCohue() >= 70 && robotConfig.getCohue() <= 90) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.06);
-            boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
-            boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
+//            robotConfig.colors();
+//            robotConfig.getDistance();
+//
+//            boolean isYellow = (robotConfig.getCohue() >= 70 && robotConfig.getCohue() <= 90) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.06);
+//            boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
+//            boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
             // Display data on Driver Station
-            telemetry.addData("Hue", robotConfig.getCohue());
-            telemetry.addData("Saturation", robotConfig.getSaturation());
-            telemetry.addData("Value", robotConfig.getValue());
-            telemetry.addData("Is Yellow?", isYellow ? "Yes" : "No");
-            telemetry.addData("Is Blue?", isBlue ? "Yes" : "No");
-            telemetry.addData("Is Red?", isRed ? "Yes" : "No");
-            telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
-            telemetry.update();
+//            telemetry.addData("Hue", robotConfig.getCohue());
+//            telemetry.addData("Saturation", robotConfig.getSaturation());
+//            telemetry.addData("Value", robotConfig.getValue());
+//            telemetry.addData("Is Yellow?", isYellow ? "Yes" : "No");
+//            telemetry.addData("Is Blue?", isBlue ? "Yes" : "No");
+//            telemetry.addData("Is Red?", isRed ? "Yes" : "No");
+//            telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
+//            telemetry.update();
 
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
 
-            pidfControllerDown.setTargetPosition(targetPosition);
-            pidfControllerDown.updatePosition(robotConfig.downMotor.getCurrentPosition());
+//            pidfControllerDown.setTargetPosition(targetPosition);
+//            pidfControllerDown.updatePosition(robotConfig.downMotor.getCurrentPosition());
 
             double powerUp = pidfControllerUp.runPIDF() + K;
-            double powerDown = pidfControllerDown.runPIDF() + K;
+//            double powerDown = pidfControllerDown.runPIDF() + K;
 
             if (Math.abs(robotConfig.upMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
                 powerUp = 0;
             }
 
-            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
-                powerDown = 0;
+//            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
+//                powerDown = 0;
+//            }
+            if(robotConfig.upMotor.getCurrentPosition()>10)
+                areSlidesDown = false;
+            if(robotConfig.upMotor.getVelocity()<0.1 && robotConfig.upMotor.getCurrentPosition()<10){
+                RobotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                RobotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                RobotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                RobotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                areSlidesDown = true;
             }
+            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && areSlidesDown){
+                robotConfig.upMotor.setPower(0);
+                robotConfig.downMotor.setPower(0);
+            }
+            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>10){
+                robotConfig.upMotor.setPower(-0.9);
+                robotConfig.downMotor.setPower(-0.9);
 
+            }
+            else {
+                robotConfig.upMotor.setPower(powerUp);
+                robotConfig.downMotor.setPower(powerUp);
+            }
             robotConfig.upMotor.setPower(powerUp);
-            robotConfig.downMotor.setPower(powerDown);
-
-            if (-gamepad1.left_stick_y > 0.1) {
-                targetPosition += 10;
-            } else if (-gamepad1.left_stick_y < -0.1) {
-                targetPosition -= 10;
+            robotConfig.downMotor.setPower(powerUp);
+            if(-gamepad1.left_stick_y > 0.1) {
+                targetPosition +=10;
+            }
+            else if(-gamepad1.left_stick_y < -0.1) {
+                targetPosition -=10;
             }
 
-            if (gamepad1.share) {
-                robotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-                robotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-                robotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-                robotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-                robotConfig.upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-                robotConfig.downMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-            }
-
-            if (gamepad2.y) {
+            if(gamepad2.y) {
                 targetPosition = OuttakeConstants.OUTTAKE_HANG_EXTENDED_POSITION;
             }
-            if (gamepad2.a) {
+            if(gamepad2.a) {
                 targetPosition = OuttakeConstants.OUTTAKE_HANG_RETRACTED_POSITION;
             }
 
@@ -192,13 +205,21 @@ public class KrakenTest extends LinearOpMode {
             telemetry.addData("Outtake State", currentOuttakeState);
             telemetry.addData("Intake State", currentIntakeState);
             telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
-            telemetry.addData("Intake Claw Closed", intakeClawClosed);*/
+            telemetry.addData("Intake Claw Closed", intakeClawClosed);
+
+           */
+            telemetry.addData("velocity", RobotConfig.upMotor.getVelocity());
+            telemetry.addData("da", da);
+            telemetry.addData("areSlidesDown", areSlidesDown);
             telemetry.addData("Target Position", targetPosition);
             telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());
-            telemetry.addData("Right Motor Position", robotConfig.downMotor.getCurrentPosition());
+
+
             telemetry.addData("Left Motor Error", robotConfig.upMotor.getCurrentPosition() - targetPosition);
             telemetry.addData("Right Motor Error", robotConfig.downMotor.getCurrentPosition() - targetPosition);
-            telemetry.addData("P", P);
+
+            telemetry.addData("Right Motor Power", robotConfig.downMotor.getPower());
+            telemetry.addData("Left Motor Power", robotConfig.upMotor.getPower());
             telemetry.update();
         }
     }
@@ -206,7 +227,7 @@ public class KrakenTest extends LinearOpMode {
     private void controlOuttakeState() {
         switch (currentOuttakeState) {
             case START:
-                if (gamepad1.dpad_down) {
+                if(gamepad1.dpad_down) {
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -215,8 +236,37 @@ public class KrakenTest extends LinearOpMode {
                             ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                     );
                 }
-                if (gamepad2.left_bumper) {
+                if(gamepad2.left_bumper){
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
+                }
+                break;
+            case INIT:
+                robotConfig.setOuttakeServoPositions(
+                        ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
+                        ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                        ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+                );
+                if(gamepad2.left_bumper){
+                    areSlidesDown = false;
+                    setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
+                }
+                if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                }
+                else if(gamepad1.dpad_up) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
+                }
+                else if(gamepad1.dpad_right) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR ;
+                }
+                else if(gamepad1.dpad_left) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 break;
             case PICKUP:
@@ -227,7 +277,7 @@ public class KrakenTest extends LinearOpMode {
                         ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
                         ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                 );
-                if (TransferTimer.seconds() > 1) { //micsorat
+                if(TransferTimer.seconds() > 0.8) { //micsorat
                     outtakeClawServoTimer.reset();
                     if (ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0) {
                         robotConfig.setOuttakeServoPositions(
@@ -238,46 +288,54 @@ public class KrakenTest extends LinearOpMode {
                                 ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                         );
                         setIntakeState(IntakeState.START);
-                        sleep(100);
+                        sleep(70);
                         setOuttakeState(OuttakeState.PLACE_SAMPLE);
                     }
                 }
-                if (gamepad2.left_bumper) {
+                if(gamepad2.left_bumper){
+                    areSlidesDown = false;
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
                 }
                 break;
             case PLACE_SAMPLE:
-                if (gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 100) {
+                if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 150) {
                     OuttakeServoTimer.reset();
                     setOuttakeState(OuttakeState.ROTATE_SAMPLE);
                 }
-                robotConfig.setOuttakeServoPositions(
-                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                        ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
-                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
-                );
-                if (gamepad1.dpad_down) {
+                    robotConfig.setOuttakeServoPositions(
+                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                            ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
+                    );
+                if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                } else if (gamepad1.dpad_up) {
+                }
+                else if(gamepad1.dpad_up) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                } else if (gamepad1.dpad_right) {
-                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
-                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
-                } else if (gamepad1.dpad_left) {
+                }
+                else if(gamepad1.dpad_right) {
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR ;
+                }
+                else if(gamepad1.dpad_left) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
-                if (gamepad1.left_trigger > 0.1) {
+                if(gamepad1.left_trigger > 0.1){
                     setOuttakeState(OuttakeState.DROP_SAMPLE);
                     outtakeClawServoTimer.reset();
                 }
-                if (gamepad2.left_bumper) {
+                if(gamepad2.left_bumper){
+                    areSlidesDown = false;
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
                 }
                 break;
             case ROTATE_SAMPLE:
-                if (gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 100) {
+                if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 150) {
                     OuttakeServoTimer.reset();
                     setOuttakeState(OuttakeState.PLACE_SAMPLE);
                 }
@@ -288,43 +346,58 @@ public class KrakenTest extends LinearOpMode {
                         ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
                         ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
                 );
-                if (gamepad1.dpad_down) {
+                if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                } else if (gamepad1.dpad_up) {
+                }
+                else if(gamepad1.dpad_up) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
-                } else if (gamepad1.dpad_right) {
+                }
+                else if(gamepad1.dpad_right) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                } else if (gamepad1.dpad_left) {
+                }
+                else if(gamepad1.dpad_left) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
-                if (gamepad1.left_trigger > 0.1) {
+                if(gamepad1.left_trigger > 0.1){
                     setOuttakeState(OuttakeState.DROP_SAMPLE);
                     outtakeClawServoTimer.reset();
                 }
-                if (gamepad2.left_bumper) {
+                if(gamepad2.left_bumper){
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
                 }
                 break;
             case DROP_SAMPLE:
-                if (gamepad1.left_trigger > 0.1) {
+                if(gamepad1.left_trigger > 0.1){
                     robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
                 }
-                if (gamepad1.dpad_down) {
+                if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                } else if (gamepad1.dpad_up) {
+                    setOuttakeState(OuttakeState.INIT);
+                }
+                else if(gamepad1.dpad_up) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
-                } else if (gamepad1.dpad_right) {
+                }
+                else if(gamepad1.dpad_right) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                } else if (gamepad1.dpad_left) {
+                }
+                else if(gamepad1.dpad_left) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
 
-                if (gamepad2.left_bumper) {
+                if(gamepad2.left_bumper){
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
                 }
                 break;
             case PICKUP_SPECIMENE:
-                if (outtakeClawOpened) {
+                if(outtakeClawOpened) {
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
@@ -333,7 +406,7 @@ public class KrakenTest extends LinearOpMode {
                             ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
                     );
                 }
-                if (gamepad2.right_trigger > 0.1) {
+                if(gamepad2.right_trigger>0.1 && outtakeClawOpened){
                     outtakeClawOpened = false;
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
@@ -343,21 +416,27 @@ public class KrakenTest extends LinearOpMode {
                             ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
                     );
                 }
-                if (gamepad2.right_bumper) {
+                if(gamepad2.dpad_up && !outtakeClawOpened){
+                    outtakeClawOpened = true;
+                    robotConfig.setOuttakeServoPositions(
+                            ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
+                            ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
+                            ServoConstants.OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
+                    );
+                }
+
+                if(gamepad2.right_bumper) {
                     setOuttakeState(OuttakeState.PLACE_SPECIMENE);
                 }
-                if (gamepad1.dpad_down) {
+                if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                } else if (gamepad1.dpad_up) {
-                    targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
-                } else if (gamepad1.dpad_right) {
-                    targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                } else if (gamepad1.dpad_left) {
-                    targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 break;
             case PLACE_SPECIMENE:
-                if (!outtakeClawOpened) {
+                if(!outtakeClawOpened) {
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
@@ -366,10 +445,11 @@ public class KrakenTest extends LinearOpMode {
                             ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION
                     );
                 }
-                if (gamepad2.left_trigger > 0.1) {
-                    targetPosition = 465;
+                if(gamepad2.left_trigger>0.1){
+                    areSlidesDown = false;
+                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
                 }
-                if (gamepad2.right_trigger > 0.1) {
+                if(gamepad2.right_trigger>0.1){
                     outtakeClawOpened = true;
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
@@ -378,20 +458,19 @@ public class KrakenTest extends LinearOpMode {
                             ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION,
                             ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION
                     );
+                    targetPosition = 320;
                 }
 
-                if (gamepad2.right_bumper && outtakeClawOpened) {
-                    setOuttakeState(OuttakeState.PICKUP);
+                if(gamepad2.right_bumper) {
+                    setOuttakeState(OuttakeState.PLACE_SPECIMENE);
+                }
+                if(gamepad2.left_bumper && outtakeClawOpened){
+                    setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
                 }
 
-                if (gamepad1.dpad_down) {
+                if(gamepad1.dpad_down) {
+                    areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
-                } else if (gamepad1.dpad_up) {
-                    targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
-                } else if (gamepad1.dpad_right) {
-                    targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                } else if (gamepad1.dpad_left) {
-                    targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
                 }
                 break;
             default:
@@ -412,7 +491,7 @@ public class KrakenTest extends LinearOpMode {
                         ServoConstants.INTAKE_CLAW_OPEN_POSITION,
                         ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                 );
-                if (gamepad1.a) {
+                if(gamepad1.a) {
                     robotConfig.setIntakeServoPositions(
                             ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                             ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
@@ -437,21 +516,23 @@ public class KrakenTest extends LinearOpMode {
                             ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                     );
                     setIntakeState(IntakeState.PICKUP);
+                    setOuttakeState(OuttakeState.INIT);
                 }
                 break;
             case PICKUP:
-                if (gamepad1.b) {
+                if(gamepad1.b){
                     robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
                     rot0 = true;
-                } else if (gamepad1.x) {
+                }
+                else if (gamepad1.x){
                     robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_90_DEGREES);
                     rot0 = false;
                 }
 
-                if (gamepad1.y && yButtonPressed.milliseconds() > 250) {
+                if(gamepad1.y && yButtonPressed.milliseconds() > 175){
                     yButtonPressed.reset();
-                    if (!intakeDown) {
-                        if (rot0) {
+                    if(!intakeDown){
+                        if(rot0){
                             intakeDown = true;
                             pickupIntakeButtonPressed = true;
                             robotConfig.setIntakeServoPositions(
@@ -465,7 +546,7 @@ public class KrakenTest extends LinearOpMode {
                             );
                             break;
                         }
-                        if (!rot0) {
+                        if(!rot0) {
                             intakeDown = true;
                             pickupIntakeButtonPressed = true;
                             robotConfig.setIntakeServoPositions(
@@ -480,8 +561,9 @@ public class KrakenTest extends LinearOpMode {
                             break;
                         }
                         break;
-                    } else if (intakeDown) {
-                        if (rot0) {
+                    }
+                    else if(intakeDown){
+                        if(rot0){
                             intakeDown = false;
                             pickupIntakeButtonPressed = true;
                             robotConfig.setIntakeServoPositions(
@@ -495,7 +577,7 @@ public class KrakenTest extends LinearOpMode {
                             );
                             break;
                         }
-                        if (!rot0) {
+                        if(!rot0) {
                             intakeDown = false;
                             pickupIntakeButtonPressed = true;
                             robotConfig.setIntakeServoPositions(
@@ -512,7 +594,7 @@ public class KrakenTest extends LinearOpMode {
                         break;
                     }
                 }
-                if (gamepad1.right_trigger > 0.1 && pickupIntakeButtonPressed) {
+                if(gamepad1.right_trigger>0.1 && pickupIntakeButtonPressed) {
                     robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
                     setIntakeState(IntakeState.RETRACT);
                 }
@@ -521,7 +603,7 @@ public class KrakenTest extends LinearOpMode {
                 TransferTimer.reset();
                 pickupIntakeButtonPressed = false;
                 setOuttakeState(OuttakeState.PICKUP);
-                if (rot0) {
+                if(rot0){
                     robotConfig.setIntakeServoPositions(
                             ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
                             ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
@@ -531,8 +613,9 @@ public class KrakenTest extends LinearOpMode {
                             ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                             ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                     );
-                } else {
-                    rot0 = true;
+                }
+                else {
+                    rot0=true;
                     robotConfig.setIntakeServoPositions(
                             ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
                             ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,

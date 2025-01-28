@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.noncompetitional.auto;
+package org.firstinspires.ftc.teamcode.competitional.auto;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -24,7 +23,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 //@Config
-@Autonomous(name = "🐙 SampleAuto 🐙", group = "Auto")
+@Autonomous(name = "🐙 SampleAuto (4+0) 🐙", group = "A. Competitional")
 public class Sample extends OpMode {
 
     private ElapsedTime retractTimer = new ElapsedTime();

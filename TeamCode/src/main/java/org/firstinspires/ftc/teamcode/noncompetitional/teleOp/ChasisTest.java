@@ -1,14 +1,12 @@
 package org.firstinspires.ftc.teamcode.noncompetitional.teleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 
-@TeleOp(name = "FieldCentricTest", group = "Test")
-public class FieldCentricTest extends LinearOpMode {
+@TeleOp(name = "ChasisTest", group = "Test")
+public class ChasisTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Inițializează configurația robotului
