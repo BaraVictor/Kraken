@@ -1,21 +1,36 @@
-package org.firstinspires.ftc.teamcode.noncompetitional.teleOp.backup;
+package org.firstinspires.ftc.teamcode.competitional.teleOp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 import org.firstinspires.ftc.teamcode.constants.OuttakeConstants;
 import org.firstinspires.ftc.teamcode.constants.ServoConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.teamcode.pedroPathing.follower.*;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierLine;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathChain;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.Timer;
+
 @Config
-@TeleOp(name = "KrakenBackUp", group = "Kraken BackUp") // regio
-public class KrakenBackUp extends LinearOpMode {
+@TeleOp(name = "🐙 KrakenAuto 🐙", group = "A. Competitional")
+public class KrakenAutomatizat extends LinearOpMode {
 
     private RobotConfig robotConfig;
     private FtcDashboard dashboard;
@@ -29,6 +44,31 @@ public class KrakenBackUp extends LinearOpMode {
     private boolean intakeClawClosed = true;
     private boolean intakeDown = false;
     private boolean rot0 = true;
+
+    private Follower follower;
+    private Timer pathTimer, actionTimer, opmodeTimer;
+    private int pathState;
+
+    /**
+     * path-uri cubice sa intre mai usor la George si sa nu dea specimenele pe jos
+     */
+    private final Pose pickup = new Pose(0, 0, Math.toRadians(0));
+    private final Pose score = new Pose(0, 0, Math.toRadians(0));
+
+
+    private PathChain pickupSpecimen, scoreSpecimen;
+    public void buildPaths() {
+
+        pickupSpecimen = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(score), new Point(pickup)))
+                .setLinearHeadingInterpolation(score.getHeading(), pickup.getHeading())
+                .build();
+        scoreSpecimen = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickup), new Point(score)))
+                .setLinearHeadingInterpolation(pickup.getHeading(), score.getHeading())
+                .build();
+
+    }
 
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
@@ -62,17 +102,30 @@ public class KrakenBackUp extends LinearOpMode {
         RETRACT
     }
 
+    private enum AutoCycleSpecimenState {
+        OFF,
+        START,
+        PICKUP,
+        TRANSIENT,
+        SCORE,
+        RECYCLE
+    }
+
     private ElapsedTime TransferTimer = new ElapsedTime();
     private ElapsedTime OuttakeServoTimer = new ElapsedTime();
     private ElapsedTime outtakeClawServoTimer = new ElapsedTime();
     private ElapsedTime yButtonPressed = new ElapsedTime();
     private ElapsedTime specimenTimer = new ElapsedTime();
+
     private OuttakeState currentOuttakeState = OuttakeState.START;
     private IntakeState currentIntakeState = IntakeState.START;
+    private AutoCycleSpecimenState currentAutoCycleSpecimenState;
 
     @Override
     public void runOpMode() {
         robotConfig = new RobotConfig(hardwareMap);
+
+        buildPaths();
 
         resetServosToInit();
 
@@ -87,38 +140,18 @@ public class KrakenBackUp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-//            robotConfig.colors();
-//            robotConfig.getDistance();
-//
-//            boolean isYellow = (robotConfig.getCohue() >= 70 && robotConfig.getCohue() <= 90) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.06);
-//            boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
-//            boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
-            // Display data on Driver Station
-//            telemetry.addData("Hue", robotConfig.getCohue());
-//            telemetry.addData("Saturation", robotConfig.getSaturation());
-//            telemetry.addData("Value", robotConfig.getValue());
-//            telemetry.addData("Is Yellow?", isYellow ? "Yes" : "No");
-//            telemetry.addData("Is Blue?", isBlue ? "Yes" : "No");
-//            telemetry.addData("Is Red?", isRed ? "Yes" : "No");
-//            telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
-//            telemetry.update();
+
+            follower.update();
 
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
 
-//            pidfControllerDown.setTargetPosition(targetPosition);
-//            pidfControllerDown.updatePosition(robotConfig.downMotor.getCurrentPosition());
-
             double powerUp = pidfControllerUp.runPIDF() + K;
-//            double powerDown = pidfControllerDown.runPIDF() + K;
 
             if (Math.abs(robotConfig.upMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
                 powerUp = 0;
             }
 
-//            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
-//                powerDown = 0;
-//            }
             if(robotConfig.upMotor.getCurrentPosition()>10)
                 areSlidesDown = false;
             if(robotConfig.upMotor.getVelocity()<0.1 && robotConfig.upMotor.getCurrentPosition()<10){
@@ -183,6 +216,7 @@ public class KrakenBackUp extends LinearOpMode {
 
             controlOuttakeState();
             controlIntakeState();
+            controlAutoCycleSpecimenState();
 
             updatePIDFController();
 
@@ -302,13 +336,13 @@ public class KrakenBackUp extends LinearOpMode {
                     OuttakeServoTimer.reset();
                     setOuttakeState(OuttakeState.ROTATE_SAMPLE);
                 }
-                    robotConfig.setOuttakeServoPositions(
-                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                            ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
-                    );
+                robotConfig.setOuttakeServoPositions(
+                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
+                );
                 if(gamepad1.dpad_down) {
                     areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
@@ -645,12 +679,68 @@ public class KrakenBackUp extends LinearOpMode {
         }
     }
 
+    private void controlAutoCycleSpecimenState() {
+        switch (currentAutoCycleSpecimenState) {
+            case OFF:
+                if(gamepad2.b){
+                    setAutoCycleSpecimenState(AutoCycleSpecimenState.START);
+                }
+                break;
+            case START:
+                /**
+                 * reset odometri pods and set outtake state to intakespecimen
+                 */
+                if(gamepad2.x){
+                    setAutoCycleSpecimenState(AutoCycleSpecimenState.OFF);
+                }
+                break;
+            case PICKUP:
+                /**
+                 * pickup specimen and set outtake state into place spacimen
+                 */
+                if(gamepad2.x){
+                    setAutoCycleSpecimenState(AutoCycleSpecimenState.OFF);
+                }
+                break;
+            case TRANSIENT:
+                /**
+                 * do the translation from the wall to the submersible
+                 */
+                if(gamepad2.x){
+                    setAutoCycleSpecimenState(AutoCycleSpecimenState.OFF);
+                }
+                break;
+            case SCORE:
+                /**
+                 * score the specimen
+                 */
+                if(gamepad2.x){
+                    setAutoCycleSpecimenState(AutoCycleSpecimenState.OFF);
+                }
+                break;
+            case RECYCLE:
+                /**
+                 * set outtake state to pickup specimen and tranlate back to the wall
+                 */
+                if(gamepad2.x){
+                    setAutoCycleSpecimenState(AutoCycleSpecimenState.OFF);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
     private void setOuttakeState(OuttakeState state) {
         currentOuttakeState = state;
     }
 
     private void setIntakeState(IntakeState state) {
         currentIntakeState = state;
+    }
+
+    public void setAutoCycleSpecimenState (AutoCycleSpecimenState state){
+        currentAutoCycleSpecimenState = state;
     }
 
     private void resetServosToInit() {
