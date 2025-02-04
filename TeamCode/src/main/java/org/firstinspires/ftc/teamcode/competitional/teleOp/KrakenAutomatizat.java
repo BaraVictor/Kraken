@@ -119,7 +119,7 @@ public class KrakenAutomatizat extends LinearOpMode {
 
     private OuttakeState currentOuttakeState = OuttakeState.START;
     private IntakeState currentIntakeState = IntakeState.START;
-    private AutoCycleSpecimenState currentAutoCycleSpecimenState;
+    private AutoCycleSpecimenState currentAutoCycleSpecimenState = AutoCycleSpecimenState.OFF;
 
     @Override
     public void runOpMode() {
@@ -156,25 +156,31 @@ public class KrakenAutomatizat extends LinearOpMode {
                 areSlidesDown = false;
             if(robotConfig.upMotor.getVelocity()<0.1 && robotConfig.upMotor.getCurrentPosition()<10){
                 RobotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                RobotConfig.midMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 RobotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 RobotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                RobotConfig.midMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
                 RobotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
                 areSlidesDown = true;
             }
             if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && areSlidesDown){
                 robotConfig.upMotor.setPower(0);
+                robotConfig.midMotor.setPower(0);
                 robotConfig.downMotor.setPower(0);
             }
             if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>10){
                 robotConfig.upMotor.setPower(-0.9);
+                robotConfig.midMotor.setPower(-0.9);
                 robotConfig.downMotor.setPower(-0.9);
 
             }
             else {
                 robotConfig.upMotor.setPower(powerUp);
+                robotConfig.midMotor.setPower(powerUp);
                 robotConfig.downMotor.setPower(powerUp);
             }
             robotConfig.upMotor.setPower(powerUp);
+            robotConfig.midMotor.setPower(powerUp);
             robotConfig.downMotor.setPower(powerUp);
             if(-gamepad1.left_stick_y > 0.1) {
                 targetPosition +=10;

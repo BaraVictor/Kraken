@@ -2,29 +2,41 @@ package org.firstinspires.ftc.teamcode.noncompetitional.teleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 
 @TeleOp(name = "ChasisTest", group = "Test")
 public class ChasisTest extends LinearOpMode {
+    public static DcMotorEx frontLeftMotor;
+    public static DcMotorEx backLeftMotor;
+    public static DcMotorEx frontRightMotor;
+    public static DcMotorEx backRightMotor;
     @Override
     public void runOpMode() throws InterruptedException {
-        // Inițializează configurația robotului
-        RobotConfig robotConfig = new RobotConfig(hardwareMap);
+
+        frontLeftMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "frontLeftMotor");
+        backLeftMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "backLeftMotor");
+        frontRightMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "frontRightMotor");
+        backRightMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "backRightMotor");
 
         waitForStart();
 
         while (opModeIsActive()) {
             if (gamepad1.a) {
-                robotConfig.setMotorPowers(1, 0, 0, 0); // Testează front-left
+                frontLeftMotor.setPower(1);
             } else if (gamepad1.b) {
-                robotConfig.setMotorPowers(0, 1, 0, 0); // Testează back-left
+                backLeftMotor.setPower(1);
             } else if (gamepad1.x) {
-                robotConfig.setMotorPowers(0, 0, 1, 0); // Testează front-right
+                frontRightMotor.setPower(1);
             } else if (gamepad1.y) {
-                robotConfig.setMotorPowers(0, 0, 0, 1); // Testează back-right
+                backRightMotor.setPower(1);
             } else {
-                robotConfig.setMotorPowers(0, 0, 0, 0);
+                frontLeftMotor.setPower(0);
+                backLeftMotor.setPower(0);
+                frontRightMotor.setPower(0);
+                backRightMotor.setPower(0);
             }
         }
     }

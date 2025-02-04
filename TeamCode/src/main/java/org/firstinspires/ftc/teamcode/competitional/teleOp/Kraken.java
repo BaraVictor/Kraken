@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -79,6 +80,22 @@ public class Kraken extends LinearOpMode {
 
         resetServosToInit();
 
+        MotorConfigurationType motorConfigurationTypeFrontLeftMotor = RobotConfig.frontLeftMotor.getMotorType().clone();
+        motorConfigurationTypeFrontLeftMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.upMotor.setMotorType(motorConfigurationTypeFrontLeftMotor);
+
+        MotorConfigurationType motorConfigurationTypeBackLeftMotor = RobotConfig.backLeftMotor.getMotorType().clone();
+        motorConfigurationTypeBackLeftMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.downMotor.setMotorType(motorConfigurationTypeBackLeftMotor);
+
+        MotorConfigurationType motorConfigurationTypeFrontRightMotor = RobotConfig.frontRightMotor.getMotorType().clone();
+        motorConfigurationTypeFrontRightMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.upMotor.setMotorType(motorConfigurationTypeFrontRightMotor);
+
+        MotorConfigurationType motorConfigurationTypeBackRightMotor = RobotConfig.backRightMotor.getMotorType().clone();
+        motorConfigurationTypeBackRightMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.downMotor.setMotorType(motorConfigurationTypeBackRightMotor  );
+
         updatePIDFController();
 
         dashboard = FtcDashboard.getInstance();
@@ -90,21 +107,6 @@ public class Kraken extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-//            robotConfig.colors();
-//            robotConfig.getDistance();
-//
-//            boolean isYellow = (robotConfig.getCohue() >= 70 && robotConfig.getCohue() <= 90) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.06);
-//            boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
-//            boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
-            // Display data on Driver Station
-//            telemetry.addData("Hue", robotConfig.getCohue());
-//            telemetry.addData("Saturation", robotConfig.getSaturation());
-//            telemetry.addData("Value", robotConfig.getValue());
-//            telemetry.addData("Is Yellow?", isYellow ? "Yes" : "No");
-//            telemetry.addData("Is Blue?", isBlue ? "Yes" : "No");
-//            telemetry.addData("Is Red?", isRed ? "Yes" : "No");
-//            telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
-//            telemetry.update();
 
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
@@ -157,6 +159,12 @@ public class Kraken extends LinearOpMode {
                 targetPosition = OuttakeConstants.OUTTAKE_HANG_EXTENDED_POSITION;
             }
             if(gamepad2.a) {
+                MotorConfigurationType motorConfigurationTypeUpMotor = RobotConfig.upMotor.getMotorType().clone();
+                motorConfigurationTypeUpMotor.setAchieveableMaxRPMFraction(1.0);
+                RobotConfig.upMotor.setMotorType(motorConfigurationTypeUpMotor);
+                MotorConfigurationType motorConfigurationTypeDownMotor = RobotConfig.downMotor.getMotorType().clone();
+                motorConfigurationTypeDownMotor.setAchieveableMaxRPMFraction(1.0);
+                RobotConfig.downMotor.setMotorType(motorConfigurationTypeDownMotor);
                 targetPosition = OuttakeConstants.OUTTAKE_HANG_RETRACTED_POSITION;
             }
 
@@ -280,7 +288,7 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
                         ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                 );
-                if(TransferTimer.seconds() > 0.8) { //micsorat
+                if(TransferTimer.seconds() > 1.0) { //micsorat
                     outtakeClawServoTimer.reset();
                     if (ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0) {
                         robotConfig.setOuttakeServoPositions(
@@ -291,7 +299,7 @@ public class Kraken extends LinearOpMode {
                                 ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                         );
                         setIntakeState(IntakeState.START);
-                        sleep(70);
+                        sleep(100);
                         setOuttakeState(OuttakeState.PLACE_SAMPLE);
                     }
                 }
@@ -618,7 +626,6 @@ public class Kraken extends LinearOpMode {
                     );
                 }
                 else {
-                    rot0=true;
                     robotConfig.setIntakeServoPositions(
                             ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
                             ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
@@ -629,18 +636,20 @@ public class Kraken extends LinearOpMode {
                             ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
                     );
                 }
+
                 setIntakeState(IntakeState.WAITING);
                 break;
             case WAITING:
-                robotConfig.setIntakeServoPositions(
-                        ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
-                        ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                        ServoConstants.INTAKE_WRIST_UP,
-                        ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
-                        ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
-                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                );
+                rot0=true;
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                            ServoConstants.INTAKE_WRIST_UP,
+                            ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                    );
                 break;
             default:
                 setIntakeState(IntakeState.START);

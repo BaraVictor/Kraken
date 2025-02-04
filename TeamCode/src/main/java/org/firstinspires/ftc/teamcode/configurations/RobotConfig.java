@@ -20,6 +20,7 @@ public class RobotConfig {
 
     // Motoare de outtake
     public static DcMotorEx upMotor;
+    public static DcMotorEx midMotor;
     public static DcMotorEx downMotor;
 
     // Servo outtake
@@ -49,6 +50,7 @@ public class RobotConfig {
         backRightMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "backRightMotor");
 
         upMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "upMotor");
+        midMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "midMotor");
         downMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "downMotor");
 
         outtakeClawServo = hardwareMap.get(Servo.class, "outtakeClawServo");
@@ -75,12 +77,15 @@ public class RobotConfig {
         backRightMotor.setDirection(DcMotorEx.Direction.FORWARD);
 
         upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        midMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
         upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        midMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
         upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        midMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         downMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
 

@@ -75,10 +75,10 @@ public class Specimen extends OpMode {
     private final Pose grabSpecimen = new Pose(17, 25, Math.toRadians(0));
 
     //placing positions
-    private final Pose firstDrop = new Pose(38, 62, Math.toRadians(180));
-    private final Pose secondDrop = new Pose(38, 64, Math.toRadians(180));
-    private final Pose thirdDrop = new Pose(38, 66, Math.toRadians(180));
-    private final Pose fourthDrop = new Pose(38, 68, Math.toRadians(180));
+    private final Pose firstDrop = new Pose(38, 62, Math.toRadians(0));
+    private final Pose secondDrop = new Pose(38, 64, Math.toRadians(0));
+    private final Pose thirdDrop = new Pose(38, 66, Math.toRadians(0));
+    private final Pose fourthDrop = new Pose(38, 68, Math.toRadians(0));
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path preloadDrop;
@@ -415,9 +415,45 @@ public class Specimen extends OpMode {
                     intaking = false;
                     closingTimer.reset();
                     hoverTimer.reset();
-                    setPathState(-1);
+                    setPathState(8);
                 }
                 break;
+                case 8:
+                    if(follower.getPose().getX() > (grabSpecimen.getX() - 1) && follower.getPose().getY() > (grabSpecimen.getY() - 1)){
+                        follower.followPath(cycle1, true);
+                        setPathState(9);
+                    }
+                    break;
+                case 9:
+                    if(follower.getPose().getX() > (firstDrop.getX() - 1) && follower.getPose().getY() > (firstDrop.getY() - 1)){
+                        follower.followPath(grab1, true);
+                        setPathState(10);
+                    }
+                    break;
+                case 10:
+                    if(follower.getPose().getX() > (grabSpecimen.getX() - 1) && follower.getPose().getY() > (grabSpecimen.getY() - 1)){
+                        follower.followPath(cycle2, true);
+                        setPathState(11);
+                    }
+                    break;
+                case 11:
+                    if(follower.getPose().getX() > (secondDrop.getX() - 1) && follower.getPose().getY() > (secondDrop.getY() - 1)){
+                        follower.followPath(grab1, true);
+                        setPathState(12);
+                    }
+                    break;
+                    case 12:
+                    if(follower.getPose().getX() > (grabSpecimen.getX() - 1) && follower.getPose().getY() > (grabSpecimen.getY() - 1)){
+                        follower.followPath(cycle3, true);
+                        setPathState(13);
+                    }
+                    break;
+                case 13:
+                    if(follower.getPose().getX() > (thirdDrop.getX() - 1) && follower.getPose().getY() > (thirdDrop.getY() - 1)){
+                        follower.followPath(grab1, true);
+                        setPathState(14);
+                    }
+                    break;
         }
     }
 
