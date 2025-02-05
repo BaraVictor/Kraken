@@ -67,9 +67,6 @@ public class RobotConfig {
         intakeClawServo = hardwareMap.get(Servo.class, "intakeClawServo");
         intakeWristRotServo = hardwareMap.get(Servo.class, "intakeWristRotServo");
 
-        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
-        distanceSensor = hardwareMap.get(DistanceSensor.class, "colorSensor");
-
         // Setează direcțiile motoarelor
         frontLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);

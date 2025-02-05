@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 
@@ -20,6 +21,11 @@ public class ChasisTest extends LinearOpMode {
         backLeftMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "backLeftMotor");
         frontRightMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "frontRightMotor");
         backRightMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "backRightMotor");
+
+        frontLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        backLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotorEx.Direction.FORWARD);
+        backRightMotor.setDirection(DcMotorEx.Direction.FORWARD);
 
         waitForStart();
 

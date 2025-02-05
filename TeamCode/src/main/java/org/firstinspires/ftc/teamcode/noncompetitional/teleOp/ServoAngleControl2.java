@@ -11,8 +11,8 @@ public class ServoAngleControl2 extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        servo = hardwareMap.get(Servo.class, "outtakeClawServo");
-        servo2 = hardwareMap.get(Servo.class, "outtakeWristRotServo");
+        servo = hardwareMap.get(Servo.class, "intakeElbowRightServo");
+        servo2 = hardwareMap.get(Servo.class, "intakeElbowLeftServo");
         /*
         servo = hardwareMap.get(Servo.class, "outtakeWristRotServo");
         servo = hardwareMap.get(Servo.class, "outtakeWristYServo");
@@ -34,6 +34,18 @@ public class ServoAngleControl2 extends LinearOpMode {
 
         while (opModeIsActive()) {
             double stickY = -gamepad1.left_stick_y;
+            if(gamepad1.a){
+                servoPosition = 0.096;
+                servoPosition2 = 0.096;
+            }
+            if(gamepad1.b){
+                servoPosition = 0.526;
+                servoPosition2 = 0.526;
+            }
+            /*if(gamepad1.x){
+                servoPosition = 1;
+                servoPosition2 = 1;
+            }*/
 
             servoPosition += stickY * 0.001;
             servoPosition2 += stickY * 0.001;
@@ -44,6 +56,8 @@ public class ServoAngleControl2 extends LinearOpMode {
 
             telemetry.addData("Servo Position", servoPosition);
             telemetry.addData("Servo Position 2", servoPosition2);
+            telemetry.addData("RealServoPosition", servo.getPosition());
+            telemetry.addData("RealServoPosition2", servo2.getPosition());
             telemetry.update();
         }
     }
