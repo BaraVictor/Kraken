@@ -35,6 +35,10 @@ public class ServoConstants {
     public static final double INTAKE_ELBOW_LEFT_SEMIRETRACTED_POSITION = 0.28;
 
     // Intake Wrist Servo Positions
+
+    /**
+     * NU MERG, TREBUIE REFACUTE POZITILE
+     */
     public static final double INTAKE_WRIST_LEFT_DOWN_POSITION = 0.2725;
     public static final double INTAKE_WRIST_RIGHT_DOWN_POSITION = 0.714;//
 
