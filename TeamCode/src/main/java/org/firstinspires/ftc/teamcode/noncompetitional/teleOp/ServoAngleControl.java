@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.noncompetitional.teleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
+
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Servo Angle Control", group = "Test")
 public class ServoAngleControl extends LinearOpMode {
 
@@ -10,20 +11,22 @@ public class ServoAngleControl extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        servo = hardwareMap.get(Servo.class, "intakeWristRotServo");
+        servo = hardwareMap.get(Servo.class, "outtakeElbowLeftServo");
 
         /*
-        servo = hardwareMap.get(Servo.class, "outtakeWristRotServo");
-        servo = hardwareMap.get(Servo.class, "outtakeWristYServo");
-        servo = hardwareMap.get(Servo.class, "outtakeElbowRightServo");
-        servo = hardwareMap.get(Servo.class, "outtakeElbowLeftServo");
-        servo = hardwareMap.get(Servo.class, "intakeElbowRightServo");
-        servo = hardwareMap.get(Servo.class, "intakeElbowLeftServo");
-        servo = hardwareMap.get(Servo.class, "intakeWristServo");
-        servo = hardwareMap.get(Servo.class, "intakeWristRightServo");
-        servo = hardwareMap.get(Servo.class, "intakeWristLeftServo");
-        servo = hardwareMap.get(Servo.class, "intakeClawServo");
-        servo = hardwareMap.get(Servo.class, "intakeWristRotServo");
+        outtakeClawServo = hardwareMap.get(Servo.class, "outtakeClawServo");
+        outtakeWristRotServo = hardwareMap.get(Servo.class, "outtakeWristRotServo");
+        outtakeWristYServo = hardwareMap.get(Servo.class, "outtakeWristYServo");
+        outtakeElbowRightServo = hardwareMap.get(Servo.class, "outtakeElbowRightServo");
+        outtakeElbowLeftServo = hardwareMap.get(Servo.class, "outtakeElbowLeftServo");
+
+        intakeElbowRightServo = hardwareMap.get(Servo.class, "intakeElbowRightServo");
+        intakeElbowLeftServo = hardwareMap.get(Servo.class, "intakeElbowLeftServo");
+        intakeWristServo = hardwareMap.get(Servo.class, "intakeWristServo");
+        intakeWristRightServo = hardwareMap.get(Servo.class, "intakeWristRightServo");
+        intakeWristLeftServo = hardwareMap.get(Servo.class, "intakeWristLeftServo");
+        intakeClawServo = hardwareMap.get(Servo.class, "intakeClawServo");
+        intakeWristRotServo = hardwareMap.get(Servo.class, "intakeWristRotServo");
         */
         double servoPosition = servo.getPosition();
         telemetry.addData("Status", "Waiting for start");
