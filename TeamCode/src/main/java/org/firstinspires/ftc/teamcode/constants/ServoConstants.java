@@ -47,8 +47,8 @@ public class ServoConstants {
     public static final double INTAKE_WRIST_LEFT_HOVER_POSITION = 0.6;
     public static final double INTAKE_WRIST_RIGHT_HOVER_POSITION = 0.6;
 
-    public static final double INTAKE_WRIST_LEFT_UP_POSITION = 0.27;
-    public static final double INTAKE_WRIST_RIGHT_UP_POSITION = 0.27;
+    public static final double INTAKE_WRIST_LEFT_UP_POSITION = 0.21;
+    public static final double INTAKE_WRIST_RIGHT_UP_POSITION = 0.21 ;
 
     // Intake Wrist Servo (Single) Positions
     public static final double INTAKE_WRIST_DOWN = 0.2;
