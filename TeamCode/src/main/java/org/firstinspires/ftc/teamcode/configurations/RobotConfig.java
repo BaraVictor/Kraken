@@ -77,6 +77,10 @@ public class RobotConfig {
         midMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
+        upMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        midMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        downMotor.setDirection(DcMotorEx.Direction.REVERSE);
+
         upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         midMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);

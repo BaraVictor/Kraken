@@ -47,7 +47,6 @@ public class ServoControlDashboardOnly extends LinearOpMode {
         outtakeClawServoPos = outtakeClawServo.getPosition();
         outtakeWristRotServoPos = outtakeWristRotServo.getPosition();
         outtakeWristYServoPos = outtakeWristYServo.getPosition();
-        intakeElbowLeftServo = outtakeElbowLeftServo.getPosition();
         intakeElbowLeftAndRightServoPos = intakeElbowRightServo.getPosition();
         intakeWristServoPos = intakeWristServo.getPosition();
         intakeWristLeftAndRightServoPos = intakeWristRightServo.getPosition();
