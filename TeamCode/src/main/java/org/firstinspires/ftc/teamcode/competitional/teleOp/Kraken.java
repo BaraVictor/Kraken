@@ -14,6 +14,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 import org.firstinspires.ftc.teamcode.constants.OuttakeConstants;
 import org.firstinspires.ftc.teamcode.constants.ServoConstants;
+import org.firstinspires.ftc.teamcode.noncompetitional.teleOp.backup.KrakenBackUp;
+import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
@@ -33,6 +36,9 @@ public class Kraken extends LinearOpMode {
     private boolean intakeClawClosed = true;
     private boolean intakeDown = false;
     private boolean rot0 = true;
+    private boolean placeSpecimenOnChamber = true;
+
+    private Follower follower;
 
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
@@ -61,7 +67,8 @@ public class Kraken extends LinearOpMode {
         INIT,
         LIFT_EXTEND,
         PICKUP,
-        TRANSFER,
+        PRERETRACT,
+        POSTRETRACTED,
         WAITING,
         RETRACT
     }
@@ -71,6 +78,13 @@ public class Kraken extends LinearOpMode {
     private ElapsedTime outtakeClawServoTimer = new ElapsedTime();
     private ElapsedTime yButtonPressed = new ElapsedTime();
     private ElapsedTime specimenTimer = new ElapsedTime();
+    private ElapsedTime pickupTimer = new ElapsedTime();
+    private ElapsedTime transientState = new ElapsedTime();
+    private ElapsedTime intakeTransfer = new ElapsedTime();
+    private ElapsedTime outtakeTransientState = new ElapsedTime();
+    private ElapsedTime pickUpSpecimen = new ElapsedTime();
+    private ElapsedTime placeSpacimen = new ElapsedTime();
+
     private OuttakeState currentOuttakeState = OuttakeState.START;
     private IntakeState currentIntakeState = IntakeState.START;
 
@@ -109,7 +123,8 @@ public class Kraken extends LinearOpMode {
         motorConfigurationTypeDownMotor.setAchieveableMaxRPMFraction(1.0);
         RobotConfig.downMotor.setMotorType(motorConfigurationTypeDownMotor);
 
-
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
 
         updatePIDFController();
 
@@ -132,6 +147,10 @@ public class Kraken extends LinearOpMode {
             double powerUp = pidfControllerUp.runPIDF() + K;
 //            double powerDown = pidfControllerDown.runPIDF() + K;
 
+            if(gamepad2.x)
+                turnTo(0);
+
+
             if (Math.abs(robotConfig.upMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
                 powerUp = 0;
             }
@@ -139,34 +158,34 @@ public class Kraken extends LinearOpMode {
 //            if (Math.abs(robotConfig.downMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
 //                powerDown = 0;
 //            }
-//            if(robotConfig.upMotor.getCurrentPosition()>10)
-//                areSlidesDown = false;
-//            if(robotConfig.upMotor.getVelocity()<0.1 && robotConfig.upMotor.getCurrentPosition()<10){
-//                RobotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-//                RobotConfig.midMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-//                RobotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-//
-//                RobotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-//                RobotConfig.midMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-//                RobotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-//                areSlidesDown = true;
-//            }
-//            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && areSlidesDown){
-//                robotConfig.upMotor.setPower(0);
-//                robotConfig.midMotor.setPower(0);
-//                robotConfig.downMotor.setPower(0);
-//            }
-//            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>10){
-//                robotConfig.upMotor.setPower(-0.9);
-//                robotConfig.midMotor.setPower(-0.9);
-//                robotConfig.downMotor.setPower(-0.9);
-//
-//            }
-//            else {
-//                robotConfig.upMotor.setPower(powerUp);
-//                robotConfig.midMotor.setPower(powerUp);
-//                robotConfig.downMotor.setPower(powerUp);
-//            }
+            if(robotConfig.upMotor.getCurrentPosition()>10)
+                areSlidesDown = false;
+            if(robotConfig.upMotor.getVelocity()<0.1 && robotConfig.upMotor.getCurrentPosition()<10){
+                RobotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                RobotConfig.midMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                RobotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+                RobotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                RobotConfig.midMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                RobotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                areSlidesDown = true;
+            }
+            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && areSlidesDown){
+                robotConfig.upMotor.setPower(0);
+                robotConfig.midMotor.setPower(0);
+                robotConfig.downMotor.setPower(0);
+            }
+            if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>10){
+                robotConfig.upMotor.setPower(-0.9);
+                robotConfig.midMotor.setPower(-0.9);
+                robotConfig.downMotor.setPower(-0.9);
+
+            }
+            else {
+                robotConfig.upMotor.setPower(powerUp);
+                robotConfig.midMotor.setPower(powerUp);
+                robotConfig.downMotor.setPower(powerUp);
+            }
             robotConfig.upMotor.setPower(powerUp);
             robotConfig.midMotor.setPower(powerUp);
             robotConfig.downMotor.setPower(powerUp);
@@ -216,7 +235,7 @@ public class Kraken extends LinearOpMode {
             dashboard = FtcDashboard.getInstance();
             dashboard.setTelemetryTransmissionInterval(25);
             telemetry = dashboard.getTelemetry();
-            /*
+
             telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
             telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
             telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
@@ -234,7 +253,7 @@ public class Kraken extends LinearOpMode {
             telemetry.addData("Intake State", currentIntakeState);
             telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
             telemetry.addData("Intake Claw Closed", intakeClawClosed);
-           */
+
             telemetry.addData("velocity", RobotConfig.upMotor.getVelocity());
             telemetry.addData("da", da);
             telemetry.addData("areSlidesDown", areSlidesDown);
@@ -306,7 +325,6 @@ public class Kraken extends LinearOpMode {
                 );
                 if(TransferTimer.seconds() > 1.0) { //micsorat
                     outtakeClawServoTimer.reset();
-                    if (ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0) {
                         robotConfig.setOuttakeServoPositions(
                                 ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
                                 ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -317,7 +335,7 @@ public class Kraken extends LinearOpMode {
                         setIntakeState(IntakeState.START);
                         sleep(100);
                         setOuttakeState(OuttakeState.PLACE_SAMPLE);
-                    }
+
                 }
                 if(gamepad2.left_bumper){
                     areSlidesDown = false;
@@ -421,41 +439,37 @@ public class Kraken extends LinearOpMode {
 
                 if(gamepad2.left_bumper){
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
+                    robotConfig.outtakeWristRotServo.setPosition(ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES);
                 }
                 break;
             case PICKUP_SPECIMENE:
-                if(outtakeClawOpened) {
-                    robotConfig.setOuttakeServoPositions(
-                            ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
-                            ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
-                            ServoConstants.OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
-                    );
-                }
-                if(gamepad2.right_trigger>0.1 && outtakeClawOpened){
-                    outtakeClawOpened = false;
-                    robotConfig.setOuttakeServoPositions(
-                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
-                            ServoConstants.OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
-                    );
-                }
-                if(gamepad2.dpad_up && !outtakeClawOpened){
-                    outtakeClawOpened = true;
-                    robotConfig.setOuttakeServoPositions(
-                            ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
-                            ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
-                            ServoConstants.OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
-                    );
-                }
-
-                if(gamepad2.right_bumper) {
-                    setOuttakeState(OuttakeState.PLACE_SPECIMENE);
+                if(outtakeTransientState.milliseconds() > 100) {
+                    if (outtakeClawOpened) {
+                        robotConfig.setOuttakeServoPositions(
+                                ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
+                                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                                ServoConstants.OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION,
+                                ServoConstants.OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION,
+                                ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
+                        );
+                        targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                        pickUpSpecimen.reset();
+                    }
+                    if (gamepad2.right_trigger > 0.1 && outtakeClawOpened) {
+                        outtakeClawOpened = false;
+                        robotConfig.setOuttakeServoPositions(
+                                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                                ServoConstants.OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION,
+                                ServoConstants.OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION,
+                                ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
+                        );
+                    }
+                    if(pickUpSpecimen.milliseconds() > 100){
+                        outtakeTransientState.reset();
+                        targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
+                        setOuttakeState(OuttakeState.PLACE_SPECIMENE);
+                    }
                 }
                 if(gamepad1.dpad_down) {
                     areSlidesDown = false;
@@ -463,38 +477,49 @@ public class Kraken extends LinearOpMode {
                 }
                 break;
             case PLACE_SPECIMENE:
-                if(!outtakeClawOpened) {
-                    robotConfig.setOuttakeServoPositions(
-                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
-                            ServoConstants.OUTTAKE_WRIST_Y_PLACE_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION
-                    );
+                if(outtakeTransientState.milliseconds() > 100) {
+                    if (!outtakeClawOpened) {
+                        robotConfig.setOuttakeServoPositions(
+                                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                                ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
+                                ServoConstants.OUTTAKE_WRIST_Y_PLACE_SPECIMEN_POSITION,
+                                ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION,
+                                ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION
+                        );
+                        placeSpacimen.reset();
+                        placeSpecimenOnChamber = true;
+                    }
+                    if (gamepad2.right_trigger > 0.1) {
+                        outtakeClawOpened = true;
+                        targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR_SCORE; //250
+                        if(placeSpecimenOnChamber){
+                            robotConfig.setOuttakeServoPositions(
+                                    ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                                    ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
+                                    ServoConstants.OUTTAKE_WRIST_Y_PLACE_SPECIMEN_POSITION,
+                                    ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION + 0.1,
+                                    ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION + 0.1
+                            );
+                            placeSpecimenOnChamber = false;
+                        }
+                        if(!placeSpecimenOnChamber){
+                            if(placeSpacimen.milliseconds() > 250) {
+                                robotConfig.setOuttakeServoPositions(
+                                        ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
+                                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_SPECIMEN_POSITION,
+                                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION,
+                                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION
+                                );
+                                targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR_RELEASE; //220
+                            }
+                        }
+                    }
                 }
-                if(gamepad2.left_trigger>0.1){
-                    areSlidesDown = false;
-                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
-                }
-                if(gamepad2.right_trigger>0.1){
+                if(gamepad2.left_bumper){
                     outtakeClawOpened = true;
-                    robotConfig.setOuttakeServoPositions(
-                            ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
-                            ServoConstants.OUTTAKE_WRIST_ROT_0_DEGREES,
-                            ServoConstants.OUTTAKE_WRIST_Y_PLACE_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION
-                    );
-                    targetPosition = 320;
-                }
-
-                if(gamepad2.right_bumper) {
-                    setOuttakeState(OuttakeState.PLACE_SPECIMENE);
-                }
-                if(gamepad2.left_bumper && outtakeClawOpened){
                     setOuttakeState(OuttakeState.PICKUP_SPECIMENE);
                 }
-
                 if(gamepad1.dpad_down) {
                     areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
@@ -518,155 +543,193 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.INTAKE_CLAW_OPEN_POSITION,
                         ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                 );
-                if(gamepad1.a) {
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_WRIST_DOWN,
-                            ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                    );
+                if(gamepad1.a){
+                    transientState.reset();
                     setIntakeState(IntakeState.LIFT_EXTEND);
                 }
                 break;
             case LIFT_EXTEND:
-                if (ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0.1727) {
+                robotConfig.setIntakeServoPositions(
+                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                        ServoConstants.INTAKE_WRIST_DOWN,
+                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                );
+                if(transientState.milliseconds() > 200){
+                    transientState.reset();
+                    setIntakeState(IntakeState.PICKUP);
+                    setOuttakeState(OuttakeState.INIT);
+                }
+                break;
+            case PICKUP:
+                if(transientState.milliseconds()>250) {
+                    if (gamepad1.b) {
+                        robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+                        rot0 = true;
+                    } else if (gamepad1.x) {
+                        robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_90_DEGREES);
+                        rot0 = false;
+                    }
+
+                    if (gamepad1.y && yButtonPressed.milliseconds() > 200) {
+                        yButtonPressed.reset();
+                        if (!intakeDown) {
+                            if (rot0) {
+                                intakeDown = true;
+                                pickupIntakeButtonPressed = true;
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                                );
+                                break;
+                            }
+                            if (!rot0) {
+                                intakeDown = true;
+                                pickupIntakeButtonPressed = true;
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
+                                );
+                                break;
+                            }
+                            break;
+                        } else if (intakeDown) {
+                            if (rot0) {
+                                intakeDown = false;
+                                pickupIntakeButtonPressed = true;
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                                );
+                                break;
+                            }
+                            if (!rot0) {
+                                intakeDown = false;
+                                pickupIntakeButtonPressed = true;
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
+                                );
+                                break;
+                            }
+                            break;
+                        }
+                    }
+                }
+                if(gamepad1.right_trigger > 0.1&& pickupIntakeButtonPressed){
+                    transientState.reset();
+                    pickupTimer.reset();
+                    setIntakeState(IntakeState.PRERETRACT);
+                }
+                break;
+            case PRERETRACT:
+                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
+                pickupIntakeButtonPressed = false;
+                intakeDown = false;
+                rot0 = true;
+                setOuttakeState(OuttakeState.INIT);
+                if(pickupTimer.milliseconds()>250){
                     robotConfig.setIntakeServoPositions(
                             ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                             ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
                             ServoConstants.INTAKE_WRIST_DOWN,
                             ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
                             ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
-                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                             ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                     );
-                    setIntakeState(IntakeState.PICKUP);
-                    setOuttakeState(OuttakeState.INIT);
-                }
-                break;
-            case PICKUP:
-                if(gamepad1.b){
-                    robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
-                    rot0 = true;
-                }
-                else if (gamepad1.x){
-                    robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_90_DEGREES);
-                    rot0 = false;
-                }
-
-                if(gamepad1.y && yButtonPressed.milliseconds() > 175){
-                    yButtonPressed.reset();
-                    if(!intakeDown){
-                        if(rot0){
-                            intakeDown = true;
-                            pickupIntakeButtonPressed = true;
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                            );
-                            break;
-                        }
-                        if(!rot0) {
-                            intakeDown = true;
-                            pickupIntakeButtonPressed = true;
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
-                            );
-                            break;
-                        }
-                        break;
-                    }
-                    else if(intakeDown){
-                        if(rot0){
-                            intakeDown = false;
-                            pickupIntakeButtonPressed = true;
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                            );
-                            break;
-                        }
-                        if(!rot0) {
-                            intakeDown = false;
-                            pickupIntakeButtonPressed = true;
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
-                            );
-                            break;
-                        }
-                        break;
+                    if(transientState.milliseconds()>500){
+                        transientState.reset();
+                        setIntakeState(IntakeState.RETRACT);
                     }
                 }
-                if(gamepad1.right_trigger>0.1 && pickupIntakeButtonPressed) {
-                    robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
-                    sleep(100);
-                    setIntakeState(IntakeState.RETRACT);
+                if(gamepad1.a){
+                    transientState.reset();
+                    setIntakeState(IntakeState.LIFT_EXTEND);
                 }
                 break;
             case RETRACT:
-                TransferTimer.reset();
-                pickupIntakeButtonPressed = false;
-                setOuttakeState(OuttakeState.PICKUP);
-                if(rot0){
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_WRIST_UP,
-                            ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
-                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                    );
+                robotConfig.setIntakeServoPositions(
+                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                        ServoConstants.INTAKE_WRIST_PERPENDICULAR,
+                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                );
+                if(transientState.milliseconds()>250){
+                    transientState.reset();
+                    setIntakeState(IntakeState.POSTRETRACTED);
                 }
-                else {
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_WRIST_UP,
-                            ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
-                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
-                    );
+                if(gamepad1.a){
+                    transientState.reset();
+                    setIntakeState(IntakeState.LIFT_EXTEND);
                 }
-
-                setIntakeState(IntakeState.WAITING);
+                break;
+            case POSTRETRACTED:
+                robotConfig.setIntakeServoPositions(
+                        ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                        ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                        ServoConstants.INTAKE_WRIST_PERPENDICULAR,
+                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                );
+                if(transientState.milliseconds()>450){
+                    transientState.reset();
+                    intakeTransfer.reset();
+                    setIntakeState(IntakeState.WAITING);
+                }
+                if(gamepad1.a){
+                    transientState.reset();
+                    setIntakeState(IntakeState.LIFT_EXTEND);
+                }
                 break;
             case WAITING:
-                rot0=true;
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_WRIST_UP,
-                            ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
-                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                    );
+                robotConfig.setIntakeServoPositions(
+                        ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                        ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                        ServoConstants.INTAKE_WRIST_UP,
+                        ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                        ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                        ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                );
+                if(transientState.milliseconds()>300){
+                    setOuttakeState(OuttakeState.PICKUP);
+                    if(intakeTransfer.milliseconds()>600){
+                        setIntakeState(IntakeState.START);
+                    }
+                }
+                if(gamepad1.a){
+                    transientState.reset();
+                    setIntakeState(IntakeState.LIFT_EXTEND);
+                }
                 break;
             default:
                 setIntakeState(IntakeState.START);
@@ -700,6 +763,11 @@ public class Kraken extends LinearOpMode {
                 ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
         );
     }
+    public void turnTo(double degrees) { // if you want to turn right, use negative degrees
+        Pose temp = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toRadians(degrees));
+        follower.holdPoint(temp);
+    }
+
 
     private void updatePIDFController() {
         CustomPIDFCoefficients coefficients = new CustomPIDFCoefficients(P, I, D, F);

@@ -4,17 +4,23 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.configurations.RobotConfig;
 import org.firstinspires.ftc.teamcode.constants.OuttakeConstants;
 import org.firstinspires.ftc.teamcode.constants.ServoConstants;
+import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 
 @Config
-@TeleOp(name = "KrakenBackUp", group = "Kraken BackUp") // regio
+@TeleOp(name = "KrakenBackUp", group = "A. Competitional")
 public class KrakenBackUp extends LinearOpMode {
 
     private RobotConfig robotConfig;
@@ -30,14 +36,16 @@ public class KrakenBackUp extends LinearOpMode {
     private boolean intakeDown = false;
     private boolean rot0 = true;
 
+    private Follower follower;
+
     private PIDFController pidfControllerUp;
     private PIDFController pidfControllerDown;
 
-    public static double P = 0.0128; //was 0.0128
+    public static double P = 0.0057; //was 0.0128
     public static double I = 0;
-    public static double D = 0.00005; //was 0.00005
-    public static double F = 0.01;    //was                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ;      //was 0.01
-    public static double K =0;
+    public static double D = 0; //was 0.00005
+    public static double F = 0.068;    //was                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ;      //was 0.01
+    public static double K = 0;
 
     public static double targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
 
@@ -57,7 +65,7 @@ public class KrakenBackUp extends LinearOpMode {
         INIT,
         LIFT_EXTEND,
         PICKUP,
-        TRANSFER,
+        PRERETRACT,
         WAITING,
         RETRACT
     }
@@ -67,6 +75,8 @@ public class KrakenBackUp extends LinearOpMode {
     private ElapsedTime outtakeClawServoTimer = new ElapsedTime();
     private ElapsedTime yButtonPressed = new ElapsedTime();
     private ElapsedTime specimenTimer = new ElapsedTime();
+    private ElapsedTime pickupTimer = new ElapsedTime();
+    private ElapsedTime transientState = new ElapsedTime();
     private OuttakeState currentOuttakeState = OuttakeState.START;
     private IntakeState currentIntakeState = IntakeState.START;
 
@@ -75,6 +85,38 @@ public class KrakenBackUp extends LinearOpMode {
         robotConfig = new RobotConfig(hardwareMap);
 
         resetServosToInit();
+
+        MotorConfigurationType motorConfigurationTypeFrontLeftMotor = RobotConfig.frontLeftMotor.getMotorType().clone();
+        motorConfigurationTypeFrontLeftMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.frontLeftMotor.setMotorType(motorConfigurationTypeFrontLeftMotor);
+
+        MotorConfigurationType motorConfigurationTypeBackLeftMotor = RobotConfig.backLeftMotor.getMotorType().clone();
+        motorConfigurationTypeBackLeftMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.backLeftMotor.setMotorType(motorConfigurationTypeBackLeftMotor);
+
+        MotorConfigurationType motorConfigurationTypeFrontRightMotor = RobotConfig.frontRightMotor.getMotorType().clone();
+        motorConfigurationTypeFrontRightMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.frontRightMotor.setMotorType(motorConfigurationTypeFrontRightMotor);
+
+        MotorConfigurationType motorConfigurationTypeBackRightMotor = RobotConfig.backRightMotor.getMotorType().clone();
+        motorConfigurationTypeBackRightMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.backRightMotor.setMotorType(motorConfigurationTypeBackRightMotor);
+
+
+        MotorConfigurationType motorConfigurationTypeUpMotor = RobotConfig.upMotor.getMotorType().clone();
+        motorConfigurationTypeUpMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.upMotor.setMotorType(motorConfigurationTypeUpMotor);
+
+        MotorConfigurationType motorConfigurationTypeMidMotor = RobotConfig.midMotor.getMotorType().clone();
+        motorConfigurationTypeMidMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.midMotor.setMotorType(motorConfigurationTypeMidMotor);
+
+        MotorConfigurationType motorConfigurationTypeDownMotor = RobotConfig.downMotor.getMotorType().clone();
+        motorConfigurationTypeDownMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.downMotor.setMotorType(motorConfigurationTypeDownMotor);
+
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
 
         updatePIDFController();
 
@@ -87,21 +129,6 @@ public class KrakenBackUp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-//            robotConfig.colors();
-//            robotConfig.getDistance();
-//
-//            boolean isYellow = (robotConfig.getCohue() >= 70 && robotConfig.getCohue() <= 90) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.06);
-//            boolean isBlue = (robotConfig.getCohue() >= 190 && robotConfig.getCohue() <= 260) && (robotConfig.getSaturation() >= 0.4) && (robotConfig.getValue() >= 0.04);
-//            boolean isRed = ((robotConfig.getCohue() >= 0 && robotConfig.getCohue() <= 50) || (robotConfig.getCohue() >= 340 && robotConfig.getCohue() <= 360)) && (robotConfig.getSaturation() >= 0.3) && (robotConfig.getValue() >= 0.04);
-            // Display data on Driver Station
-//            telemetry.addData("Hue", robotConfig.getCohue());
-//            telemetry.addData("Saturation", robotConfig.getSaturation());
-//            telemetry.addData("Value", robotConfig.getValue());
-//            telemetry.addData("Is Yellow?", isYellow ? "Yes" : "No");
-//            telemetry.addData("Is Blue?", isBlue ? "Yes" : "No");
-//            telemetry.addData("Is Red?", isRed ? "Yes" : "No");
-//            telemetry.addData("Distance (cm)", String.format("%.2f cm", robotConfig.getDistance()));
-//            telemetry.update();
 
             pidfControllerUp.setTargetPosition(targetPosition);
             pidfControllerUp.updatePosition(robotConfig.upMotor.getCurrentPosition());
@@ -111,6 +138,10 @@ public class KrakenBackUp extends LinearOpMode {
 
             double powerUp = pidfControllerUp.runPIDF() + K;
 //            double powerDown = pidfControllerDown.runPIDF() + K;
+
+            if(gamepad2.x)
+                turnTo(0);
+
 
             if (Math.abs(robotConfig.upMotor.getCurrentPosition() - targetPosition) <= OuttakeConstants.TOLERANCE) {
                 powerUp = 0;
@@ -123,25 +154,32 @@ public class KrakenBackUp extends LinearOpMode {
                 areSlidesDown = false;
             if(robotConfig.upMotor.getVelocity()<0.1 && robotConfig.upMotor.getCurrentPosition()<10){
                 RobotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                RobotConfig.midMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 RobotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
                 RobotConfig.upMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+                RobotConfig.midMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
                 RobotConfig.downMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
                 areSlidesDown = true;
             }
             if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && areSlidesDown){
                 robotConfig.upMotor.setPower(0);
+                robotConfig.midMotor.setPower(0);
                 robotConfig.downMotor.setPower(0);
             }
             if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>10){
                 robotConfig.upMotor.setPower(-0.9);
+                robotConfig.midMotor.setPower(-0.9);
                 robotConfig.downMotor.setPower(-0.9);
 
             }
             else {
                 robotConfig.upMotor.setPower(powerUp);
+                robotConfig.midMotor.setPower(powerUp);
                 robotConfig.downMotor.setPower(powerUp);
             }
             robotConfig.upMotor.setPower(powerUp);
+            robotConfig.midMotor.setPower(powerUp);
             robotConfig.downMotor.setPower(powerUp);
             if(-gamepad1.left_stick_y > 0.1) {
                 targetPosition +=10;
@@ -189,7 +227,8 @@ public class KrakenBackUp extends LinearOpMode {
             dashboard = FtcDashboard.getInstance();
             dashboard.setTelemetryTransmissionInterval(25);
             telemetry = dashboard.getTelemetry();
-          /*  telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
+
+            telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
             telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
             telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
             telemetry.addData("Outtake Elbow Right Position", robotConfig.outtakeElbowRightServo.getPosition());
@@ -207,7 +246,6 @@ public class KrakenBackUp extends LinearOpMode {
             telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
             telemetry.addData("Intake Claw Closed", intakeClawClosed);
 
-           */
             telemetry.addData("velocity", RobotConfig.upMotor.getVelocity());
             telemetry.addData("da", da);
             telemetry.addData("areSlidesDown", areSlidesDown);
@@ -277,20 +315,19 @@ public class KrakenBackUp extends LinearOpMode {
                         ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
                         ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                 );
-                if(TransferTimer.seconds() > 0.8) { //micsorat
+                if(TransferTimer.seconds() > 1.0) { //micsorat
                     outtakeClawServoTimer.reset();
-                    if (ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0) {
-                        robotConfig.setOuttakeServoPositions(
-                                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                                ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
-                                ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
-                                ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
-                        );
-                        setIntakeState(IntakeState.START);
-                        sleep(70);
-                        setOuttakeState(OuttakeState.PLACE_SAMPLE);
-                    }
+                    robotConfig.setOuttakeServoPositions(
+                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                            ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+                    );
+                    setIntakeState(IntakeState.START);
+                    sleep(100);
+                    setOuttakeState(OuttakeState.PLACE_SAMPLE);
+
                 }
                 if(gamepad2.left_bumper){
                     areSlidesDown = false;
@@ -302,13 +339,13 @@ public class KrakenBackUp extends LinearOpMode {
                     OuttakeServoTimer.reset();
                     setOuttakeState(OuttakeState.ROTATE_SAMPLE);
                 }
-                    robotConfig.setOuttakeServoPositions(
-                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                            ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
-                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
-                    );
+                robotConfig.setOuttakeServoPositions(
+                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
+                );
                 if(gamepad1.dpad_down) {
                     areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
@@ -496,139 +533,160 @@ public class KrakenBackUp extends LinearOpMode {
                             ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                             ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
                             ServoConstants.INTAKE_WRIST_DOWN,
-                            ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                    );
-                    setIntakeState(IntakeState.LIFT_EXTEND);
-                }
-                break;
-            case LIFT_EXTEND:
-                if (ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0.1727) {
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_WRIST_DOWN,
                             ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
                             ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
                             ServoConstants.INTAKE_CLAW_OPEN_POSITION,
                             ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                     );
-                    setIntakeState(IntakeState.PICKUP);
-                    setOuttakeState(OuttakeState.INIT);
+                    transientState.reset();
+                    setIntakeState(IntakeState.LIFT_EXTEND);
+                }
+                break;
+            case LIFT_EXTEND:
+                if(transientState.milliseconds()>100) {
+                    if (ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION - robotConfig.intakeElbowRightServo.getPosition() <= 0.1727) {
+                        robotConfig.setIntakeServoPositions(
+                                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                ServoConstants.INTAKE_WRIST_DOWN,
+                                ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                                ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                        );
+                        transientState.reset();
+                        setIntakeState(IntakeState.PICKUP);
+                        setOuttakeState(OuttakeState.INIT);
+                    }
                 }
                 break;
             case PICKUP:
-                if(gamepad1.b){
-                    robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
-                    rot0 = true;
-                }
-                else if (gamepad1.x){
-                    robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_90_DEGREES);
-                    rot0 = false;
-                }
-
-                if(gamepad1.y && yButtonPressed.milliseconds() > 175){
-                    yButtonPressed.reset();
-                    if(!intakeDown){
-                        if(rot0){
-                            intakeDown = true;
-                            pickupIntakeButtonPressed = true;
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                            );
-                            break;
-                        }
-                        if(!rot0) {
-                            intakeDown = true;
-                            pickupIntakeButtonPressed = true;
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
-                            );
-                            break;
-                        }
-                        break;
+                if(transientState.milliseconds()>100) {
+                    if (gamepad1.b) {
+                        robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+                        rot0 = true;
+                    } else if (gamepad1.x) {
+                        robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_90_DEGREES);
+                        rot0 = false;
                     }
-                    else if(intakeDown){
-                        if(rot0){
-                            intakeDown = false;
-                            pickupIntakeButtonPressed = true;
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                            );
+
+                    if (gamepad1.y && yButtonPressed.milliseconds() > 175) {
+                        yButtonPressed.reset();
+                        if (!intakeDown) {
+                            if (rot0) {
+                                intakeDown = true;
+                                pickupIntakeButtonPressed = true;
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                                );
+                                break;
+                            }
+                            if (!rot0) {
+                                intakeDown = true;
+                                pickupIntakeButtonPressed = true;
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
+                                );
+                                break;
+                            }
+                            break;
+                        } else if (intakeDown) {
+                            if (rot0) {
+                                intakeDown = false;
+                                pickupIntakeButtonPressed = true;
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                                );
+                                break;
+                            }
+                            if (!rot0) {
+                                intakeDown = false;
+                                pickupIntakeButtonPressed = true;
+                                robotConfig.setIntakeServoPositions(
+                                        ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                                        ServoConstants.INTAKE_WRIST_DOWN,
+                                        ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                                        ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
+                                );
+                                break;
+                            }
                             break;
                         }
-                        if(!rot0) {
-                            intakeDown = false;
-                            pickupIntakeButtonPressed = true;
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
-                                    ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
-                            );
-                            break;
-                        }
-                        break;
                     }
                 }
                 if(gamepad1.right_trigger>0.1 && pickupIntakeButtonPressed) {
                     robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
-                    setIntakeState(IntakeState.RETRACT);
+                    pickupTimer.reset();
+                    transientState.reset();
+                    setIntakeState(IntakeState.PRERETRACT);
+                }
+                break;
+            case PRERETRACT:
+                if (transientState.milliseconds()>100) {
+                    robotConfig.intakeWristRightServo.setPosition(ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION);
+                    robotConfig.intakeWristLeftServo.setPosition(ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION);
+                    robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+                    if(pickupTimer.milliseconds()>250) {
+                        transientState.reset();
+                        setIntakeState(IntakeState.WAITING);
+                    }
                 }
                 break;
             case RETRACT:
-                TransferTimer.reset();
-                pickupIntakeButtonPressed = false;
-                setOuttakeState(OuttakeState.PICKUP);
-                if(rot0){
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_WRIST_UP,
-                            ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
-                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                    );
+                if(transientState.milliseconds()>100) {
+                    TransferTimer.reset();
+                    pickupIntakeButtonPressed = false;
+                    setOuttakeState(OuttakeState.PICKUP);
+                    if (rot0) {
+                        robotConfig.setIntakeServoPositions(
+                                ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                                ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                                ServoConstants.INTAKE_WRIST_UP,
+                                ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                                ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                                ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                        );
+                    } else {
+                        robotConfig.setIntakeServoPositions(
+                                ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                                ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                                ServoConstants.INTAKE_WRIST_UP,
+                                ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                                ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                                ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                                ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
+                        );
+                    }
+                    TransferTimer.reset();
+                    setIntakeState(IntakeState.WAITING);
                 }
-                else {
-                    rot0=true;
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
-                            ServoConstants.INTAKE_WRIST_UP,
-                            ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
-                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_90_DEGREES
-                    );
-                }
-                setIntakeState(IntakeState.WAITING);
                 break;
             case WAITING:
+                rot0=true;
+                pickupIntakeButtonPressed = false;
+                setOuttakeState(OuttakeState.PICKUP);
                 robotConfig.setIntakeServoPositions(
                         ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
                         ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
@@ -671,6 +729,11 @@ public class KrakenBackUp extends LinearOpMode {
                 ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
         );
     }
+    public void turnTo(double degrees) { // if you want to turn right, use negative degrees
+        Pose temp = new Pose(follower.getPose().getX(), follower.getPose().getY(), Math.toRadians(degrees));
+        follower.holdPoint(temp);
+    }
+
 
     private void updatePIDFController() {
         CustomPIDFCoefficients coefficients = new CustomPIDFCoefficients(P, I, D, F);
