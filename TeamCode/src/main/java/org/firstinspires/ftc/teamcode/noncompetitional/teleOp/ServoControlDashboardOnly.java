@@ -5,6 +5,9 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.constants.OuttakeConstants;
+import org.firstinspires.ftc.teamcode.constants.ServoConstants;
+
 @Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Servo Control with Dashboard Only", group = "Test")
 public class ServoControlDashboardOnly extends LinearOpMode {
@@ -25,7 +28,6 @@ public class ServoControlDashboardOnly extends LinearOpMode {
     public static double intakeWristLeftAndRightServoPos;
     public static double intakeClawServoPos;
     public static double intakeWristRotServoPos;
-
     @Override
     public void runOpMode() {
         // Inițializarea servo-urilor din hardware map
@@ -43,15 +45,15 @@ public class ServoControlDashboardOnly extends LinearOpMode {
         intakeWristRotServo = hardwareMap.get(Servo.class, "intakeWristRotServo");
 
         // Citirea pozițiilor curente ale servo-urilor
-        outtakeElbowLeftAndRightServoPos = outtakeElbowLeftServo.getPosition();
-        outtakeClawServoPos = outtakeClawServo.getPosition();
-        outtakeWristRotServoPos = outtakeWristRotServo.getPosition();
-        outtakeWristYServoPos = outtakeWristYServo.getPosition();
-        intakeElbowLeftAndRightServoPos = intakeElbowRightServo.getPosition();
-        intakeWristServoPos = intakeWristServo.getPosition();
-        intakeWristLeftAndRightServoPos = intakeWristRightServo.getPosition();
-        intakeClawServoPos = intakeClawServo.getPosition();
-        intakeWristRotServoPos = intakeWristRotServo.getPosition();
+        outtakeElbowLeftAndRightServoPos = ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION;
+        outtakeClawServoPos = ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION;
+        outtakeWristRotServoPos = ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES;
+        outtakeWristYServoPos = ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION;
+        intakeElbowLeftAndRightServoPos = ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION;
+        intakeWristServoPos = ServoConstants.INTAKE_WRIST_UP;
+        intakeWristLeftAndRightServoPos = ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION;
+        intakeClawServoPos = ServoConstants.INTAKE_CLAW_OPEN_POSITION;
+        intakeWristRotServoPos = ServoConstants.INTAKE_WRIST_ROT_0_DEGREES;
 
         telemetry.addData("Initial Positions Set", "All servos locked to current position.");
         telemetry.update();

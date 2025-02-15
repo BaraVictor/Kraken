@@ -160,7 +160,7 @@ public class Kraken extends LinearOpMode {
 //            }
             if(robotConfig.upMotor.getCurrentPosition()>10)
                 areSlidesDown = false;
-            if(robotConfig.upMotor.getVelocity()<0.1 && robotConfig.upMotor.getCurrentPosition()<10){
+            if(robotConfig.upMotor.getCurrentPosition()<100 && robotConfig.upMotor.getVelocity()<0.05 && targetPosition== OuttakeConstants.OUTTAKE_MIN_POSITION){
                 RobotConfig.upMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 RobotConfig.midMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 RobotConfig.downMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -236,34 +236,30 @@ public class Kraken extends LinearOpMode {
             dashboard.setTelemetryTransmissionInterval(25);
             telemetry = dashboard.getTelemetry();
 
-            telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
-            telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
-            telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
-            telemetry.addData("Outtake Elbow Right Position", robotConfig.outtakeElbowRightServo.getPosition());
-            telemetry.addData("Outtake Elbow Left Position", robotConfig.outtakeElbowLeftServo.getPosition());
-            telemetry.addData("TranferTimer", TransferTimer.seconds());
-            telemetry.addData("Intake Elbow Right Position", robotConfig.intakeElbowRightServo.getPosition());
-            telemetry.addData("Intake Elbow Left Position", robotConfig.intakeElbowLeftServo.getPosition());
-            telemetry.addData("Intake Wrist Position", robotConfig.intakeWristServo.getPosition());
-            telemetry.addData("Intake Wrist Right Position", robotConfig.intakeWristRightServo.getPosition());
-            telemetry.addData("Intake Wrist Left Position", robotConfig.intakeWristLeftServo.getPosition());
-            telemetry.addData("Intake Claw Position", robotConfig.intakeClawServo.getPosition());
-            telemetry.addData("Intake Wrist Rot Position", robotConfig.intakeWristRotServo.getPosition());
-            telemetry.addData("Outtake State", currentOuttakeState);
-            telemetry.addData("Intake State", currentIntakeState);
-            telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
-            telemetry.addData("Intake Claw Closed", intakeClawClosed);
+//            telemetry.addData("Outtake Claw Position", robotConfig.outtakeClawServo.getPosition());
+//            telemetry.addData("Outtake Wrist Rot Position", robotConfig.outtakeWristRotServo.getPosition());
+//            telemetry.addData("Outtake Wrist Y Position", robotConfig.outtakeWristYServo.getPosition());
+//            telemetry.addData("Outtake Elbow Right Position", robotConfig.outtakeElbowRightServo.getPosition());
+//            telemetry.addData("Outtake Elbow Left Position", robotConfig.outtakeElbowLeftServo.getPosition());
+//            telemetry.addData("TranferTimer", TransferTimer.seconds());
+//            telemetry.addData("Intake Elbow Right Position", robotConfig.intakeElbowRightServo.getPosition());
+//            telemetry.addData("Intake Elbow Left Position", robotConfig.intakeElbowLeftServo.getPosition());
+//            telemetry.addData("Intake Wrist Position", robotConfig.intakeWristServo.getPosition());
+//            telemetry.addData("Intake Wrist Right Position", robotConfig.intakeWristRightServo.getPosition());
+//            telemetry.addData("Intake Wrist Left Position", robotConfig.intakeWristLeftServo.getPosition());
+//            telemetry.addData("Intake Claw Position", robotConfig.intakeClawServo.getPosition());
+//            telemetry.addData("Intake Wrist Rot Position", robotConfig.intakeWristRotServo.getPosition());
+//            telemetry.addData("Outtake State", currentOuttakeState);
+//            telemetry.addData("Intake State", currentIntakeState);
+//            telemetry.addData("Outtake Claw Closed", outtakeClawClosed);
+//            telemetry.addData("Intake Claw Closed", intakeClawClosed);
 
             telemetry.addData("velocity", RobotConfig.upMotor.getVelocity());
-            telemetry.addData("da", da);
             telemetry.addData("areSlidesDown", areSlidesDown);
             telemetry.addData("Target Position", targetPosition);
             telemetry.addData("Left Motor Position", robotConfig.upMotor.getCurrentPosition());
-
-
             telemetry.addData("Left Motor Error", robotConfig.upMotor.getCurrentPosition() - targetPosition);
             telemetry.addData("Right Motor Error", robotConfig.downMotor.getCurrentPosition() - targetPosition);
-
             telemetry.addData("Right Motor Power", robotConfig.downMotor.getPower());
             telemetry.addData("Left Motor Power", robotConfig.upMotor.getPower());
             telemetry.update();
@@ -565,7 +561,7 @@ public class Kraken extends LinearOpMode {
                 }
                 break;
             case PICKUP:
-                if(transientState.milliseconds()>250) {
+                if(transientState.milliseconds()>200) {
                     if (gamepad1.b) {
                         robotConfig.intakeWristRotServo.setPosition(ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
                         rot0 = true;
@@ -651,7 +647,7 @@ public class Kraken extends LinearOpMode {
                 intakeDown = false;
                 rot0 = true;
                 setOuttakeState(OuttakeState.INIT);
-                if(pickupTimer.milliseconds()>250){
+                if(pickupTimer.milliseconds()>150){
                     robotConfig.setIntakeServoPositions(
                             ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                             ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
@@ -661,7 +657,7 @@ public class Kraken extends LinearOpMode {
                             ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                             ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                     );
-                    if(transientState.milliseconds()>500){
+                    if(transientState.milliseconds()>300){
                         transientState.reset();
                         setIntakeState(IntakeState.RETRACT);
                     }
@@ -681,7 +677,7 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                         ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                 );
-                if(transientState.milliseconds()>250){
+                if(transientState.milliseconds()>150){
                     transientState.reset();
                     setIntakeState(IntakeState.POSTRETRACTED);
                 }
@@ -700,7 +696,7 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                         ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                 );
-                if(transientState.milliseconds()>450){
+                if(transientState.milliseconds()>250){
                     transientState.reset();
                     intakeTransfer.reset();
                     setIntakeState(IntakeState.WAITING);
@@ -720,9 +716,9 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                         ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                 );
-                if(transientState.milliseconds()>300){
+                if(transientState.milliseconds()>500){
                     setOuttakeState(OuttakeState.PICKUP);
-                    if(intakeTransfer.milliseconds()>600){
+                    if(intakeTransfer.milliseconds()>800){
                         setIntakeState(IntakeState.START);
                     }
                 }

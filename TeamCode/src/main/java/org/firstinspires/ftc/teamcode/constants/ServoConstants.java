@@ -19,8 +19,8 @@ public class ServoConstants {
     public static final double OUTTAKE_WRIST_Y_PLACE_SPECIMEN_POSITION = 0.5;
 
     // Outtake Elbow Servo Positions
-    public static final double OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION = 0.74;
-    public static final double OUTTAKE_ELBOW_LEFT_PICKUP_POSITION = 0.74;
+    public static final double OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION = 0.76;
+    public static final double OUTTAKE_ELBOW_LEFT_PICKUP_POSITION = 0.76;
     public static final double OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION = 0.4;
     public static final double OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION = 0.4;
     public static final double OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION = 0.14;
@@ -44,8 +44,8 @@ public class ServoConstants {
     public static final double INTAKE_WRIST_LEFT_HOVER_POSITION = 0.55;
     public static final double INTAKE_WRIST_RIGHT_HOVER_POSITION = 0.55;
 
-    public static final double INTAKE_WRIST_LEFT_UP_POSITION = 0.21;
-    public static final double INTAKE_WRIST_RIGHT_UP_POSITION = 0.21 ;
+    public static final double INTAKE_WRIST_LEFT_UP_POSITION = 0.28;
+    public static final double INTAKE_WRIST_RIGHT_UP_POSITION = 0.28;
 
     // Intake Wrist Servo (Single) Positions
     public static final double INTAKE_WRIST_DOWN = 0.17;
