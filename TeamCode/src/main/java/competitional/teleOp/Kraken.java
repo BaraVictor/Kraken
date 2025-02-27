@@ -98,6 +98,10 @@ public class Kraken extends LinearOpMode {
     public void runOpMode() {
         robotConfig = new RobotConfig(hardwareMap);
 
+        Constants.setConstants(FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
+
         resetServosToInit();
 
         MotorConfigurationType motorConfigurationTypeFrontLeftMotor = RobotConfig.frontLeftMotor.getMotorType().clone();
@@ -140,9 +144,6 @@ public class Kraken extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap);
-        follower.setStartingPose(follower.getPose());
 
         waitForStart();
 
@@ -150,7 +151,7 @@ public class Kraken extends LinearOpMode {
             follower.update();
 
             if(gamepad2.dpad_up){
-                follower.turnToDegrees(-90);
+                follower.turnToDegrees(90);
             }
 
             pidfControllerUp.setTargetPosition(targetPosition);
@@ -189,9 +190,9 @@ public class Kraken extends LinearOpMode {
                 robotConfig.downMotor.setPower(0);
             }
             if(targetPosition == OuttakeConstants.OUTTAKE_MIN_POSITION && robotConfig.upMotor.getCurrentPosition()>10){
-                robotConfig.upMotor.setPower(-0.9);
-                robotConfig.midMotor.setPower(-0.9);
-                robotConfig.downMotor.setPower(-0.9);
+                robotConfig.upMotor.setPower(-1);
+                robotConfig.midMotor.setPower(-1);
+                robotConfig.downMotor.setPower(-1);
 
             }
             else {

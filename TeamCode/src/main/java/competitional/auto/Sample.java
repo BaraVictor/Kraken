@@ -56,48 +56,28 @@ public class Sample extends OpMode {
     public static double targetPosition = 0;
 
     private Follower follower;
-    private Timer pathTimer, actionTimer, opmodeTimer;
+    private Timer pathTimer, actionTimer, opmodeTimer; //?
     private int pathState;
-
-    /*
-    TO Do:
-    Scurtat timere
-    Meshup paths-slidere (actiuni)
-    Finalizare parcare
-
-    Done:
-    Schimbate pozitiile
-    Outtake se da peste cap dupa ce ajunge sus
-     */
-
 
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));
 
-    private final Pose score = new Pose(21, 129, Math.toRadians(318));
-    private final Pose scorePos2 = new Pose(21, 129, Math.toRadians(318));
-    private final Pose scorePos3 = new Pose(21, 129, Math.toRadians(318));
-    private final Pose preload = new Pose(21, 126, Math.toRadians(318));
+    private final Pose score = new Pose(24, 128, Math.toRadians(318));
+    private final Pose preload = new Pose(24, 128, Math.toRadians(318));
     private final Pose sample1 = new Pose(23.5, 126, Math.toRadians(357));
     private final Pose sample2 = new Pose(23.5, 131, Math.toRadians(6.5));
     private final Pose sample3 = new Pose(25.5, 134, Math.toRadians(25));
     private final Pose park = new Pose(75, 97, Math.toRadians(90));
     private final Pose parkFinal = new Pose(75, 93 , Math.toRadians(90));
 
-
     private Path scorePreload;
-    private PathChain firstPickup, secondPickup, thirdPickup, parkPath, score1, score2, score3, parkPush;
+    private PathChain firstPickup, secondPickup, thirdPickup, parkPath, score1, score2, score3, parkPush; //?
 
     public void buildPaths() {
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePreload = new Path((new BezierLine(new Point(startPose), new Point(score))));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), score.getHeading());
-//        scorePreload = follower.pathBuilder()
-//                .addPath(new BezierLine(new Point(startPose), new Point(score)))
-//                .setLinearHeadingInterpolation(startPose.getHeading(),score.getHeading())
-//                .build();
 
-        /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         firstPickup = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(score), new Point(sample1)))
                 .setLinearHeadingInterpolation(score.getHeading(), sample1.getHeading())
@@ -108,49 +88,37 @@ public class Sample extends OpMode {
                 .setLinearHeadingInterpolation(sample1.getHeading(), score.getHeading())
                 .build();
 
-        /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         secondPickup = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(score), new Point(sample2)))
                 .setLinearHeadingInterpolation(score.getHeading(), sample2.getHeading())
                 .build();
 
         score2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(sample2), new Point(scorePos2)))
-                .setLinearHeadingInterpolation(sample2.getHeading(), scorePos2.getHeading())
+                .addPath(new BezierLine(new Point(sample2), new Point(score)))
+                .setLinearHeadingInterpolation(sample2.getHeading(), score.getHeading())
                 .build();
 
-        /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         thirdPickup = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePos2), new Point(sample3)))
-                .setLinearHeadingInterpolation(scorePos2.getHeading(), sample3.getHeading())
+                .addPath(new BezierLine(new Point(score), new Point(sample3)))
+                .setLinearHeadingInterpolation(score.getHeading(), sample3.getHeading())
                 .build();
 
         score3 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(sample3), new Point(scorePos3)))
-                .setLinearHeadingInterpolation(sample3.getHeading(), scorePos3.getHeading())
+                .addPath(new BezierLine(new Point(sample3), new Point(score)))
+                .setLinearHeadingInterpolation(sample3.getHeading(), score.getHeading())
                 .build();
 
         parkPath = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(scorePos3), new Point(park), new Point(park)))
-                .setLinearHeadingInterpolation(scorePos3.getHeading(), park.getHeading())
+                .addPath(new BezierCurve(new Point(score), new Point(park), new Point(park)))
+                .setLinearHeadingInterpolation(score.getHeading(), park.getHeading())
                 .build();
 
         parkPush = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(park), new Point(parkFinal)))
                 .setLinearHeadingInterpolation(park.getHeading(), parkFinal.getHeading())
                 .build();
-
-
-        /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-
-        /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
     }
 
-    /**
-     * This switch is called continuously and runs the pathing, at certain points, it triggers the action state.
-     * Everytime the switch changes case, it will reset the timer. (This is because of the setPathState() method)
-     * The followPath() function sets the follower to run the specific path, but does NOT wait for it to finish before moving on.
-     */
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
@@ -161,7 +129,7 @@ public class Sample extends OpMode {
                 break;
 
             case 1:
-                if (follower.getPose().getX() > (score.getX() - 1) && follower.getPose().getY() > (score.getY() - 1)) {
+                if (!follower.isBusy()) {
                     /* Score Preload */
                     if (!deposited) {
                         targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
@@ -195,7 +163,7 @@ public class Sample extends OpMode {
                 }
                 break;
             case 2:
-                if (follower.getPose().getX() > (sample1.getX() - 1) && follower.getPose().getY() > (sample1.getY() - 1)) {
+                if (!follower.isBusy()) {
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -206,40 +174,17 @@ public class Sample extends OpMode {
                     hasTurned = true;
                 }
                 if (!hovering && Math.toDegrees(follower.getPose().getHeading()) > 357 && hasTurned && turningTimer.seconds() > 1) {
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_WRIST_DOWN,
-                            ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
-                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                    );
+                    hoverExtend();
                     hoverTimer.reset();
                 }
                 if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
                     hovering = true;
                     if (!intaking && hoverTimer.seconds()>0.5) {
-                        robotConfig.setIntakeServoPositions(
-                                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                ServoConstants.INTAKE_WRIST_DOWN,
-                                ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+                        openExtend();
                         intaking = true;
                     } else {
                         if (hoverTimer.seconds() > 1.2) {
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                            );
+                            closeExtend();
                             if (robotConfig.intakeClawServo.getPosition() > ServoConstants.INTAKE_CLAW_CLOSED_POSITION - 0.1) {
                                 follower.followPath(score1, true);
                                 deposited = false;
@@ -252,7 +197,7 @@ public class Sample extends OpMode {
                 }
                 break;
             case 3:
-                if (follower.getPose().getX() > (sample1.getX() - 1) && follower.getPose().getY() > (sample1.getY() - 1)) {
+                if (!follower.isBusy()) {
                     if(!transfer) {
                         robotConfig.setOuttakeServoPositions(
                                 ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
@@ -341,7 +286,7 @@ public class Sample extends OpMode {
 
             //sample 3, to be tested
             case 4:
-                if (follower.getPose().getX() > (sample2.getX() - 1) && follower.getPose().getY() > (sample2.getY() - 1)) {
+                if (!follower.isBusy()) {
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -352,40 +297,17 @@ public class Sample extends OpMode {
                     hasTurned = true;
                 }
                 if (!hovering && Math.toDegrees(follower.getPose().getHeading()) > 0  && hasTurned && turningTimer.seconds() > 1.5) {
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_WRIST_DOWN,
-                            ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
-                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                    );
+                    hoverExtend();
                     hoverTimer.reset();
                 }
                 if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
                     hovering = true;
                     if (!intaking && hoverTimer.seconds()>0.5) {
-                        robotConfig.setIntakeServoPositions(
-                                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                ServoConstants.INTAKE_WRIST_DOWN,
-                                ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+                        openExtend();
                         intaking = true;
                     } else {
                         if (hoverTimer.seconds() > 1.2) {
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                            );
+                            closeExtend();
                             if (robotConfig.intakeClawServo.getPosition() > ServoConstants.INTAKE_CLAW_CLOSED_POSITION - 0.1) {
                                 follower.followPath(score2, true);
                                 deposited = false;
@@ -403,7 +325,7 @@ public class Sample extends OpMode {
                 break;
 
             case 5:
-                if (follower.getPose().getX() > (score.getX() - 1) && follower.getPose().getY() > (score.getY() - 1)) {
+                if (!follower.isBusy()) {
                     if(!transfer) {
                         robotConfig.setOuttakeServoPositions(
                                 ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
@@ -491,7 +413,7 @@ public class Sample extends OpMode {
                 break;
 
             case 6:
-                if (follower.getPose().getX() > (sample3.getX() - 1.5) && follower.getPose().getY() > (sample3.getY() - 1.5)) {
+                if (!follower.isBusy()) {
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -502,40 +424,17 @@ public class Sample extends OpMode {
                     hasTurned = true;
                 }
                 if (!hovering && Math.toDegrees(follower.getPose().getHeading()) > 10  && hasTurned && turningTimer.seconds() > 2.5 ) {
-                    robotConfig.setIntakeServoPositions(
-                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                            ServoConstants.INTAKE_WRIST_DOWN,
-                            ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
-                            ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
-                            ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                    );
+                    hoverExtend();
                     hoverTimer.reset();
                 }
                 if (robotConfig.intakeElbowRightServo.getPosition() == ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION) {
                     hovering = true;
                     if (!intaking && hoverTimer.seconds() > 0.5) {
-                        robotConfig.setIntakeServoPositions(
-                                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                ServoConstants.INTAKE_WRIST_DOWN,
-                                ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
-                                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+                        openExtend();
                         intaking = true;
                     } else {
                         if (hoverTimer.seconds() > 1) {
-                            robotConfig.setIntakeServoPositions(
-                                    ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_DOWN,
-                                    ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
-                                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
-                                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
-                            );
+                            closeExtend();
                             if (robotConfig.intakeClawServo.getPosition() > ServoConstants.INTAKE_CLAW_CLOSED_POSITION - 0.1) {
                                 follower.followPath(score2, true);
                                 deposited = false;
@@ -553,7 +452,7 @@ public class Sample extends OpMode {
                 break;
 
             case 7:
-                if (follower.getPose().getX() > (scorePos3.getX() - 1) && follower.getPose().getY() > (scorePos3.getY() - 1)) {
+                if (!follower.isBusy()) {
                     if(!transfer) {
                         robotConfig.setOuttakeServoPositions(
                                 ServoConstants.OUTTAKE_CLAW_OPEN_POSITION,
@@ -643,7 +542,7 @@ public class Sample extends OpMode {
                 break;
 
             case 8:
-                if (follower.getPose().getX() > (park.getX() - 1) && follower.getPose().getY() > (park.getY() - 1)){
+                if (!follower.isBusy()){
                     robotConfig.setOuttakeServoPositions(
                             ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
                             ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
@@ -654,21 +553,6 @@ public class Sample extends OpMode {
                     follower.followPath(parkPush);
                     setPathState(-1);
                 }
-
-                /*
-            case 5:
-                follower.followPath(thirdPickup,false);
-                setPathState(6);
-                break;
-            case 6:
-                follower.followPath(score3,false);
-                setPathState(7);
-                break;
-            case 7:
-                follower.followPath(parkPath,false);
-                setPathState(-1);
-                break;*/
-
         }
     }
     /** These change the states of the paths and actions
@@ -809,6 +693,41 @@ public class Sample extends OpMode {
                 ServoConstants.INTAKE_WRIST_MID,
                 ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
                 ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+        );
+    }
+    
+    private void openExtend(){
+        robotConfig.setIntakeServoPositions(
+                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                ServoConstants.INTAKE_WRIST_DOWN,
+                ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES);
+    }
+    
+    private void closeExtend(){
+        robotConfig.setIntakeServoPositions(
+                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                ServoConstants.INTAKE_WRIST_DOWN,
+                ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION,
+                ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION,
+                ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+        );
+    }
+    
+    private void hoverExtend(){
+        robotConfig.setIntakeServoPositions(
+                ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                ServoConstants.INTAKE_WRIST_DOWN,
+                ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
                 ServoConstants.INTAKE_CLAW_OPEN_POSITION,
                 ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
         );

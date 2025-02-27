@@ -44,6 +44,7 @@ public class ServoControlDashboardOnly extends LinearOpMode {
         intakeClawServo = hardwareMap.get(Servo.class, "intakeClawServo");
         intakeWristRotServo = hardwareMap.get(Servo.class, "intakeWristRotServo");
 
+        intakeWristRightServo.setDirection(Servo.Direction.REVERSE);
         // Citirea pozițiilor curente ale servo-urilor
         outtakeElbowLeftAndRightServoPos = ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION;
         outtakeClawServoPos = ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION;

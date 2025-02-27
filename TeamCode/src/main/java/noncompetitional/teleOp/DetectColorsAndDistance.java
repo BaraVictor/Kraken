@@ -12,8 +12,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @TeleOp(name = "Detect Colors (HSV) and Distance", group = "Sensor")
 public class DetectColorsAndDistance extends LinearOpMode {
 
-    private ColorSensor colorSensor;    // REV Color Sensor V3
-    private DistanceSensor distanceSensor; // Proximity sensor
+    private ColorSensor colorSensor;    // REV Color Sensor V3 ??
+    private DistanceSensor distanceSensor; // Proximity sensor ??
 
     @Override
     public void runOpMode() {

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -67,6 +68,8 @@ public class RobotConfig {
         intakeClawServo = hardwareMap.get(Servo.class, "intakeClawServo");
         intakeWristRotServo = hardwareMap.get(Servo.class, "intakeWristRotServo");
 
+        intakeWristRightServo.setDirection(Servo.Direction.REVERSE);
+
         // Setează direcțiile motoarelor
         frontLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorEx.Direction.REVERSE);
@@ -88,6 +91,18 @@ public class RobotConfig {
         upMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         midMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         downMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        MotorConfigurationType motorConfigurationTypeUpMotor = RobotConfig.upMotor.getMotorType().clone();
+        motorConfigurationTypeUpMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.upMotor.setMotorType(motorConfigurationTypeUpMotor);
+
+        MotorConfigurationType motorConfigurationTypeMidMotor = RobotConfig.midMotor.getMotorType().clone();
+        motorConfigurationTypeMidMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.midMotor.setMotorType(motorConfigurationTypeMidMotor);
+
+        MotorConfigurationType motorConfigurationTypeDownMotor = RobotConfig.downMotor.getMotorType().clone();
+        motorConfigurationTypeDownMotor.setAchieveableMaxRPMFraction(1.0);
+        RobotConfig.downMotor.setMotorType(motorConfigurationTypeDownMotor);
     }
 
     public void setMotorPowers(double frontLeftPower, double backLeftPower, double frontRightPower, double backRightPower) {
