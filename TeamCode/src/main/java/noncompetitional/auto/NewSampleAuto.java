@@ -1,10 +1,9 @@
-package competitional.auto;
+package noncompetitional.auto;
 
 import static java.lang.Math.toRadians;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;

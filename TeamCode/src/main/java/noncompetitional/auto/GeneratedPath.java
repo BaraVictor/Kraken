@@ -1,4 +1,4 @@
-package competitional.auto;
+package noncompetitional.auto;
 
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
