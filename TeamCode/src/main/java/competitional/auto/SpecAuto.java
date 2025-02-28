@@ -82,22 +82,20 @@ public class SpecAuto extends OpMode {
     private final Pose push1 = new Pose(30, 22, toRadians(0));
 
 
-    private final Pose sample2 = new Pose(62, 13, toRadians(0));
+    private final Pose sample2 = new Pose(62, 12, toRadians(0));
 
     private final Pose sample2Control1= new Pose(60, 30, toRadians(0));
 
-    private final Pose push2= new Pose(30, 13, toRadians(0));
+    private final Pose push2= new Pose(30, 12, toRadians(0));
 
 
 
-    private final Pose sample3 = new Pose(62, 3, toRadians(0));
+    private final Pose sample3 = new Pose(62, 2, toRadians(0));
 
     private final Pose sample3Control1= new Pose(60, 25, toRadians(0));
 
-    private final Pose push3= new Pose(30, 1, toRadians(0));
     
-    
-    private final Pose grab1= new Pose(12,0.5, toRadians(0));
+    private final Pose grab1= new Pose(11,2, toRadians(0));
 
 
     private final Pose grabLineup= new Pose(30, 27, toRadians(0));
@@ -105,15 +103,16 @@ public class SpecAuto extends OpMode {
     private final Pose grabPickup= new Pose(13, 27, toRadians(0));
 
 
+
     private final Pose placeControl = new Pose(20, 70, toRadians(0));
 
-    private final Pose place1 = new Pose(45, 68, toRadians(0));
+    private final Pose place1 = new Pose(46, 71, toRadians(0));
 
-    private final Pose place2 = new Pose(45, 69, toRadians(0));
+    private final Pose place2 = new Pose(46, 69, toRadians(0));
 
-    private final Pose place3 = new Pose(45, 70, toRadians(0));
+    private final Pose place3 = new Pose(46, 67, toRadians(0));
 
-    private final Pose place4 = new Pose(45, 71, toRadians(0));
+    private final Pose place4 = new Pose(46.3, 66, toRadians(0));
 
     private final Pose parkPose = new Pose(20, 30, toRadians(0));
 
@@ -141,6 +140,7 @@ public class SpecAuto extends OpMode {
 
                 .addPath(new BezierCurve(new Point(push1), new Point(sample2Control1),new Point(sample2)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
+                .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
 
                 .addPath(new BezierLine(new Point(sample2), new Point(push2)))
@@ -150,11 +150,13 @@ public class SpecAuto extends OpMode {
 
                 .addPath(new BezierCurve(new Point(push2), new Point(sample3Control1),new Point(sample3)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
+                .addParametricCallback(0.8, () ->follower.setMaxPower(0.5))
+                .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
 
                 .addPath(new BezierLine(new Point(sample3), new Point(grab1)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
-                .addParametricCallback(0.5, ()->lowSpeed())
+                .addParametricCallback(0.7, () -> follower.setMaxPower(0.8))
                 .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
                 .build();
@@ -232,6 +234,8 @@ public class SpecAuto extends OpMode {
         park = follower.pathBuilder()
                 .addPath((new BezierCurve(new Point(place4), new Point(placeControl),new Point(grabPickup))))
                 .setLinearHeadingInterpolation(grab1.getHeading(), grabLineup.getHeading())
+                .addParametricCallback(0.3, () -> intakeTeleOp())
+                .addParametricCallback(0.7, () -> outtakeTeleOp())
                 .build();
 
     }
@@ -674,6 +678,29 @@ public class SpecAuto extends OpMode {
                 ServoConstants.OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION,
                 ServoConstants.OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION,
                 ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
+        );
+    }
+
+    private void outtakeTeleOp() {
+        targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+        robotConfig.setOuttakeServoPositions(
+                ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+                ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+        );
+    }
+
+    private void intakeTeleOp(){
+        robotConfig.setIntakeServoPositions(
+                ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                ServoConstants.INTAKE_WRIST_MID,
+                ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
         );
     }
 

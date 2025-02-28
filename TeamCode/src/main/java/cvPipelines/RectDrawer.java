@@ -62,9 +62,9 @@ public class RectDrawer extends OpenCvPipeline {
 //
 //    }
 
-    public RectDrawer(Telemetry telemetry){
+    public RectDrawer(Telemetry telemetry,SampleColor colorType){
         this.telemetry = telemetry;
-//        this.colorType = colorType;
+        this.colorType = colorType;
     }
 
     @Override
