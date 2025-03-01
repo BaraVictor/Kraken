@@ -95,7 +95,7 @@ public class SpecAuto extends OpMode {
     private final Pose sample3Control1= new Pose(60, 25, toRadians(0));
 
     
-    private final Pose grab1= new Pose(11,2, toRadians(0));
+    private final Pose grab1= new Pose(11.5,1.5, toRadians(0));
 
 
     private final Pose grabLineup= new Pose(30, 27, toRadians(0));
@@ -106,13 +106,13 @@ public class SpecAuto extends OpMode {
 
     private final Pose placeControl = new Pose(20, 70, toRadians(0));
 
-    private final Pose place1 = new Pose(46, 71, toRadians(0));
+    private final Pose place1 = new Pose(45.5, 71, toRadians(0));
 
-    private final Pose place2 = new Pose(46, 69, toRadians(0));
+    private final Pose place2 = new Pose(46.3, 69, toRadians(0));
 
-    private final Pose place3 = new Pose(46, 67, toRadians(0));
+    private final Pose place3 = new Pose(46.3, 67, toRadians(0));
 
-    private final Pose place4 = new Pose(46.3, 66, toRadians(0));
+    private final Pose place4 = new Pose(46.5, 66, toRadians(0));
 
     private final Pose parkPose = new Pose(20, 30, toRadians(0));
 
@@ -140,6 +140,7 @@ public class SpecAuto extends OpMode {
 
                 .addPath(new BezierCurve(new Point(push1), new Point(sample2Control1),new Point(sample2)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
+                .addParametricCallback(0.8, ()->follower.setMaxPower(0.8))
                 .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
 
@@ -150,7 +151,7 @@ public class SpecAuto extends OpMode {
 
                 .addPath(new BezierCurve(new Point(push2), new Point(sample3Control1),new Point(sample3)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
-                .addParametricCallback(0.8, () ->follower.setMaxPower(0.5))
+                .addParametricCallback(0.7, () ->follower.setMaxPower(0.6))
                 .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
 

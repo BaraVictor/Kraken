@@ -1,13 +1,16 @@
 package cvProcessors;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import cvPipelines.RectDrawer;
 import org.firstinspires.ftc.vision.VisionProcessor;
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
@@ -223,7 +226,11 @@ public class SampleOrientationProcessor implements VisionProcessor{
 
         telemetry.update();
 
+        Bitmap bitmap = Bitmap.createBitmap(frame.cols(), frame.rows(), Bitmap.Config.RGB_565);
+        Utils.matToBitmap(frame, bitmap);
 
+        // Send image to FTC Dashboard
+        FtcDashboard.getInstance().sendImage(bitmap);
 
         return frame;
     }
@@ -266,7 +273,6 @@ public class SampleOrientationProcessor implements VisionProcessor{
         double cameraAngle = 0;
 
         double height = 3.0; // in inches
-
 
         double canvasVertical = height*3.0/8.0; // inches
         double canvasHorizontal = height / 2.0;

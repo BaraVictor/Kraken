@@ -395,4 +395,8 @@ public class RectDrawer extends OpenCvPipeline {
 
         return output;
     }
+
+    public double getSampleAngle() {
+        return sampleAngle;
+    }
 }
