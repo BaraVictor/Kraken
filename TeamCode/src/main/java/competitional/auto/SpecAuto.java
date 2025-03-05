@@ -34,7 +34,7 @@ import pedroPathing.constants.LConstants;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "Spec Auto ", group = "Examples")
+@Autonomous(name = "Spec Auto ", group = "A. Competitional")
 public class SpecAuto extends OpMode {
 
     private Follower follower;
@@ -46,10 +46,10 @@ public class SpecAuto extends OpMode {
     private RobotConfig robotConfig;
     private PIDFController pidfController;
 
-    public static double P = 0.0128;
+    public static double P = 0.007;
     public static double I = 0;
-    public static double D = 0.00005;
-    public static double F = 0.01;
+    public static double D = 0;
+    public static double F = 0;
     public static double K = 0;
     public static double targetPosition = 0;
     private boolean areSlidesDown = false;
@@ -98,7 +98,7 @@ public class SpecAuto extends OpMode {
     private final Pose grab1= new Pose(11.5,1.5, toRadians(0));
 
 
-    private final Pose grabLineup= new Pose(30, 27, toRadians(0));
+    private final Pose grabLineup= new Pose(25, 27, toRadians(0));
 
     private final Pose grabPickup= new Pose(13, 27, toRadians(0));
 
@@ -112,7 +112,7 @@ public class SpecAuto extends OpMode {
 
     private final Pose place3 = new Pose(46.3, 67, toRadians(0));
 
-    private final Pose place4 = new Pose(46.5, 66, toRadians(0));
+    private final Pose place4 = new Pose(46.5, 65, toRadians(0));
 
     private final Pose parkPose = new Pose(20, 30, toRadians(0));
 
@@ -122,7 +122,7 @@ public class SpecAuto extends OpMode {
         preloadDrop = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(startPose), new Point(scorePreload)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
-                .addParametricCallback(0.2, () -> lineupSpec())
+                .addParametricCallback(0.1, () -> lineupSpec())
                 .setZeroPowerAccelerationMultiplier(4.0)
                 .setPathEndTimeoutConstraint(0)
                 .build();
@@ -192,7 +192,7 @@ public class SpecAuto extends OpMode {
         thirdGrab = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(place2),new Point(placeControl), new Point(grabLineup)))
                 .setLinearHeadingInterpolation(place1.getHeading(), grabLineup.getHeading())
-                .setZeroPowerAccelerationMultiplier(4.0)
+                .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
                 .addParametricCallback(0.8, ()->lowSpeed())
                 .addParametricCallback(0.1, () -> pickupSpec())
@@ -214,7 +214,7 @@ public class SpecAuto extends OpMode {
         fourthGrab = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(place3), new Point(placeControl),new Point(grabLineup)))
                 .setLinearHeadingInterpolation(place1.getHeading(), grabLineup.getHeading())
-                .setZeroPowerAccelerationMultiplier(4.0)
+                .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
                 .addParametricCallback(0.8, ()->lowSpeed())
                 .addParametricCallback(0.1, () -> pickupSpec())
@@ -665,11 +665,7 @@ public class SpecAuto extends OpMode {
         targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR;
     }
 
-
-
     private ElapsedTime placeTimer = new ElapsedTime();
-
-
 
     private void pickupSpec(){
         targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;

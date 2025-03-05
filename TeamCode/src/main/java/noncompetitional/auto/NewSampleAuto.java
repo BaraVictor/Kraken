@@ -66,13 +66,13 @@ public class NewSampleAuto extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
 
-    private final Pose startPose = new Pose(7.5, 111, toRadians(-90));
+    private final Pose startPose = new Pose(7.5, 111, toRadians(270));
 
-    private final Pose scorePose = new Pose(15, 129, toRadians(-45));
+    private final Pose scorePose = new Pose(20, 129, toRadians(315));
 
-    private final Pose sample1 = new Pose(23, 121, toRadians(0));
+    private final Pose sample1 = new Pose(24, 121, toRadians(0));
 
-    private final Pose sample2 = new Pose(23, 132, toRadians(0));
+    private final Pose sample2 = new Pose(24, 132, toRadians(0));
 
     private final Pose sample3 = new Pose(31, 125, toRadians(48));
 
@@ -85,29 +85,32 @@ public class NewSampleAuto extends OpMode {
         preloadDrop = follower.pathBuilder()
                 .addPath(new Path((new BezierLine(new Point(startPose), new Point(scorePose)))))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.7, () -> liftSlides())
-                .addParametricCallback(1,() -> liftScore())
+                .setPathEndTimeoutConstraint(0)
+//                .addParametricCallback(0.7, () -> liftSlides())
+//                .addParametricCallback(1,() -> liftScore())
                 .build();
 
         firstPickup = follower.pathBuilder()
-                .addParametricCallback(0.3,() -> downSlides())
+//                .addParametricCallback(0.3,() -> downSlides())
                 .addPath(new BezierLine(new Point(scorePose), new Point(sample1)))
                 .setLinearHeadingInterpolation(scorePose.getHeading(),sample1.getHeading())
-                .setPathEndTimeoutConstraint(1000)
+                .setPathEndTimeoutConstraint(0)
                 .build();
 
         drop1 = follower.pathBuilder()
                 .addPath(new Path((new BezierLine(new Point(sample1), new Point(scorePose)))))
                 .setLinearHeadingInterpolation(sample1.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0.7, () -> liftSlides())
-                .addParametricCallback(1,() -> liftScore())
+
+                .setPathEndTimeoutConstraint(0)
+//                .addParametricCallback(0.7, () -> liftSlides())
+//                .addParametricCallback(1,() -> liftScore())
                 .build();
 
         secondPickup = follower.pathBuilder()
-                .addParametricCallback(0.3,() -> downSlides())
+//                .addParametricCallback(0.3,() -> downSlides())
                 .addPath(new BezierLine(new Point(scorePose), new Point(sample2)))
                 .setLinearHeadingInterpolation(scorePose.getHeading(),sample2.getHeading())
-                .setPathEndTimeoutConstraint(1000)
+                .setPathEndTimeoutConstraint(0)
                 .build();
 
     }
@@ -122,10 +125,24 @@ public class NewSampleAuto extends OpMode {
                 break;
             case 1:
                 if (!follower.isBusy()) {
-                    follower.setMaxPower(0.9);
+                    follower.setMaxPower(0.5);
                     follower.followPath(firstPickup);
                     //liftSlides();
                     setPathState(2);
+                }
+                break;
+            case 2:
+                if (!follower.isBusy()) {
+                    follower.followPath(drop1);
+                    //liftSlides();
+                    setPathState(3);
+                }
+                break;
+            case 3:
+                if (!follower.isBusy()) {
+                    follower.followPath(secondPickup);
+                    //liftSlides();
+                    setPathState(-1);
                 }
                 break;
         }

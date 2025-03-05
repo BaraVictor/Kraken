@@ -39,9 +39,10 @@ public class Camera extends LinearOpMode {
             // Get the detected sample angle
             double sampleAngle = processor.getSampleAngle();
             double sampleAngleDegrees = sampleAngle * 180 / Math.PI;
-
-            double servoPosition = getServoPositionFromAngle(sampleAngleDegrees);
-            intakeWristRotServo.setPosition(servoPosition);
+            if(gamepad1.a) {
+                double servoPosition = mapAngleToServoPosition(sampleAngleDegrees);
+                intakeWristRotServo.setPosition(servoPosition);
+            }
 
             if (!detectedObjects.isEmpty()) {
                 Point largestObject = detectedObjects.get(0);
@@ -70,17 +71,24 @@ public class Camera extends LinearOpMode {
         visionPortal.close();
 
     }
-    private double getServoPositionFromAngle(double angle) {
-        if (angle > -30 && angle <= 30) {
-            return 0.29;
-        }else if(angle > 30 && angle <=60){
-            return 0.56;
-        } else if ((angle > 60 && angle <= 90) || (angle<=-60 && angle>=-90)) {
-            return 0.84;
-        } else if(angle <= -30 && angle > -60){
-            return 0.02;
-        } else {
-            return 0.29;  // Default case (to avoid undefined behavior)
-        }
+    public double mapAngleToServoPosition(double angle) {
+        // Define the min and max values for angle and servo position
+        double angleMin = 0;
+        double angleMax = 90;
+        double servoMin = 0.29;
+        double servoMax = 0.86;
+
+        // Ensure the angle is within bounds (between 0 and 90)
+        if(angle<0)
+            angle = 180-angle;
+
+        // Ensure the angle is within bounds (between 0 and 90)
+        angle = Math.max(angleMin, Math.min(angleMax, angle));
+
+        // Apply the linear mapping formula with the reversed servo position range
+        double servoPosition = servoMax - ((angle - angleMin) / (angleMax - angleMin)) * (servoMax - servoMin);
+
+
+        return servoPosition;
     }
 }
