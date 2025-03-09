@@ -75,6 +75,7 @@ public class Kraken extends LinearOpMode {
         PICKUP,
         PRERETRACT,
         POSTRETRACTED,
+        FASTTRANSFER,
         WAITING,
         RETRACT
     }
@@ -656,10 +657,15 @@ public class Kraken extends LinearOpMode {
                         }
                     }
                 }
-                if(gamepad1.right_trigger > 0.1&& pickupIntakeButtonPressed){
+                if(gamepad1.right_bumper && pickupIntakeButtonPressed){
                     transientState.reset();
                     pickupTimer.reset();
                     setIntakeState(IntakeState.PRERETRACT);
+                }
+                if(gamepad1.right_trigger > 0.1&& pickupIntakeButtonPressed){
+                    transientState.reset();
+                    pickupTimer.reset();
+                    setIntakeState(IntakeState.FASTTRANSFER);
                 }
                 break;
             case PRERETRACT:
@@ -722,6 +728,33 @@ public class Kraken extends LinearOpMode {
                     transientState.reset();
                     intakeTransfer.reset();
                     setIntakeState(IntakeState.WAITING);
+                }
+                if(gamepad1.a){
+                    transientState.reset();
+                    setIntakeState(IntakeState.LIFT_EXTEND);
+                }
+                break;
+            case FASTTRANSFER:
+                robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
+                pickupIntakeButtonPressed = false;
+                intakeDown = false;
+                rot0 = true;
+                outtakeClawOpened = true;
+                setOuttakeState(OuttakeState.INIT);
+                if(pickupTimer.milliseconds()>100){         //150
+                    robotConfig.setIntakeServoPositions(
+                            ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
+                            ServoConstants.INTAKE_WRIST_DOWN,
+                            ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION,
+                            ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION,
+                            ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                    );
+                    if(transientState.milliseconds()>100){  //150
+                        transientState.reset();
+                        setIntakeState(IntakeState.WAITING);
+                    }
                 }
                 if(gamepad1.a){
                     transientState.reset();
