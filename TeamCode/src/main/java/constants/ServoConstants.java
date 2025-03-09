@@ -35,7 +35,8 @@ public class ServoConstants {
     public static final double OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION = 0.2;
     public static final double OUTTAKE_ELBOW_RIGHT_PLACE_SPECIMEN_POSITION = 0.73;
     public static final double OUTTAKE_ELBOW_LEFT_PLACE_SPECIMEN_POSITION = 0.73;
-
+    public static final double OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_VERTICAL = 0.58;
+    public static final double OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_VERTICAL = 0.58;
     // Intake Elbow Servo Positions
     public static final double INTAKE_ELBOW_RIGHT_RETRACTED_POSITION = 0.05;
     public static final double INTAKE_ELBOW_LEFT_RETRACTED_POSITION = 0.05;
@@ -54,6 +55,9 @@ public class ServoConstants {
     public static final double INTAKE_WRIST_LEFT_UP_POSITION = 0.2;
     public static final double INTAKE_WRIST_RIGHT_UP_POSITION = 0.2;
 
+    public static final double INTAKE_WRIST_LEFT_CAMERA_POSITION = 0.75;
+    public static final double INTAKE_WRIST_RIGHT_CAMERA_POSITION = 0.75;
+
     // Intake Wrist Servo (Single) Positions
     public static final double INTAKE_WRIST_DOWN = 0.15;
     public static final double INTAKE_WRIST_MID = 0.66;
@@ -66,7 +70,9 @@ public class ServoConstants {
     public static final double INTAKE_CLAW_CLOSED_POSITION = 0.98;
 
     // Intake Wrist Rotation Servo Positions facut
-    public static final double INTAKE_WRIST_ROT_0_DEGREES = 0.29;
-    public static final double INTAKE_WRIST_ROT_45_DEGREES = 0.56;
-    public static final double INTAKE_WRIST_ROT_90_DEGREES = 0.84;
+    public static final double INTAKE_WRIST_ROT_0_DEGREES = 0.39;
+    public static final double INTAKE_WRIST_ROT_minus_45_DEGREES = 0.25;
+    public static final double INTAKE_WRIST_ROT_45_DEGREES = 0.53;
+    public static final double INTAKE_WRIST_ROT_90_DEGREES = 0.68;
+    public static final double INTAKE_WRIST_ROT_180_DEGREES = 0.98;
 }

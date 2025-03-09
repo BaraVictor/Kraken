@@ -11,7 +11,7 @@ public class OuttakeConstants {
     public static final int OUTTAKE_HANG_RETRACTED_POSITION = 0;
 
     public static final int OUTTAKE_TOP_SAMPLE_BOX = 1650;
-    public static final int OUTTAKE_BOTTOM_SAMPLE_BOX = 350;
+    public static final int OUTTAKE_BOTTOM_SAMPLE_BOX = 400;
 
     public static final int OUTTAKE_SECOND_SPECIMEN_BAR = 600;
     public static final int OUTTAKE_SECOND_SPECIMEN_BAR_SCORE = 450;

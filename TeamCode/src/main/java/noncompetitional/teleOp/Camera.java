@@ -1,18 +1,24 @@
 package noncompetitional.teleOp;
 
+import android.util.Size;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.openftc.easyopencv.OpenCvCamera;
 
 import java.util.ArrayList;
 
+import configurations.RobotConfig;
+import constants.ServoConstants;
 import cvProcessors.SampleOrientationProcessor;
 
 @TeleOp(name = "Camera")
@@ -20,75 +26,236 @@ import cvProcessors.SampleOrientationProcessor;
 public class Camera extends LinearOpMode {
     private VisionPortal visionPortal;
     private SampleOrientationProcessor processor;
-
+    private RobotConfig robotConfig;
     private Servo intakeWristRotServo;
-
     private FtcDashboard dashboard;
+    private boolean goToPos = true;
+    private ElapsedTime canDown = new ElapsedTime();
+    private boolean startTransferTimer = true;
+    private ElapsedTime intakeTimer = new ElapsedTime();
+    private ElapsedTime balancingTimer = new ElapsedTime();
+   private boolean transfer = false;
+    private boolean canTransfer = false;
+    private boolean hasTransfered = false;
+    boolean closed = false;
+
+    private static final double MIN_POSITION = 0.21;  // Fully retracted
+    private static final double MAX_POSITION = 0.53;  // Fully extended
+    private static final double DEAD_ZONE = 0.001;  // A tighter dead zone to prevent jitter
+    private static final double STOP_THRESHOLD = 0.01;  // Threshold for stopping, when servo is close enough to center (larger range)
+    private static final double MOVE_STEP_SIZE = 0.003;
+    private static final double EXTEND_STEP_SIZE = 0.001;
+    private static final double EXTEND_STEP_SIZE2 = 0.004;// Smaller step size to ensure smoother movement (smaller change)
+    private static final long DELAY_AFTER_MOVE_MS = 30;
+    double currentPosition = MIN_POSITION;
+    boolean sampleFound = false;
+    boolean resetTimer = true;
+    boolean retractIntake = true;
+    double servoPos;
+    private static final double X_MIN = -2.5;
+    private static final double X_MAX = 0.5;
+    double sampleY;
+    double sampleX;
     @Override
     public void runOpMode() throws InterruptedException {
+        robotConfig = new RobotConfig(hardwareMap);
+        robotConfig.intakeWristRightServo.setPosition(ServoConstants.INTAKE_WRIST_RIGHT_CAMERA_POSITION);
+        robotConfig.intakeWristLeftServo.setPosition(ServoConstants.INTAKE_WRIST_LEFT_CAMERA_POSITION);
+        robotConfig.intakeElbowLeftServo.setPosition(MIN_POSITION);
+        robotConfig.intakeElbowRightServo.setPosition(MIN_POSITION);
+        robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
+        robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_OPEN_POSITION);
+        robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
+        robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
+        robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION);
+        robotConfig.intakeWristServo.setPosition(ServoConstants.INTAKE_WRIST_PERPENDICULAR);
         dashboard = FtcDashboard.getInstance();
         processor = new SampleOrientationProcessor(telemetry);
         intakeWristRotServo = hardwareMap.get(Servo.class, "intakeWristRotServo");
-        visionPortal = VisionPortal.easyCreateWithDefaults(
-                hardwareMap.get(WebcamName.class, "camera"), // Change if using another camera
-                processor
-        );
+        visionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "camera")) // Your webcam name
+                .addProcessor(processor)
+                .build();// Pass telemetry if needed
+
+        // Example data: You need actual RotatedRects from image processing
+        ArrayList<RotatedRect> detectedRects = new ArrayList<>();
+
+        // Example scaling factor (change based on your image size)
+        double scalingFactor = 1;
+
+        // Call getOffsets()
         waitForStart();
+
         while (opModeIsActive()) {
-            ArrayList<Point> detectedObjects = processor.getOffsets();
-            // Get the detected sample angle
-            double sampleAngle = processor.getSampleAngle();
-            double sampleAngleDegrees = sampleAngle * 180 / Math.PI;
-            if(gamepad1.a) {
-                double servoPosition = mapAngleToServoPosition(sampleAngleDegrees);
-                intakeWristRotServo.setPosition(servoPosition);
+            telemetry.addData("balancingTimer", balancingTimer.seconds());
+            ArrayList<double[]> samples = processor.getRealPositions();
+
+            for(double[] sample : samples) {
+                sampleX = sample[0];  // X position of the sample
+                sampleY = sample[1];
+                servoPos = mapAngleToServoPosition(sample[2]);
+                // If a sample is found within the range of X, stop extending and center the servo
+                if (sampleX >= X_MIN && sampleX <= X_MAX && sampleY<=3.5) {
+                    sampleFound = true;
+                    telemetry.addData("sampleFound", sampleFound);
+                }
             }
-
-            if (!detectedObjects.isEmpty()) {
-                Point largestObject = detectedObjects.get(0);
-
-                for (Point obj : detectedObjects) {
-                    if (obj.y > largestObject.y) { // Assuming lower Y = larger object
-                        largestObject = obj;
+            if(sampleFound && resetTimer) {
+                balancingTimer.reset();
+                resetTimer = false;
+            }
+                if (sampleFound && balancingTimer.seconds()<1.5 && retractIntake) {
+                    // Center the servo on the sample (smooth motion)
+//                    double targetServoPosition = mapYToServoPosition(sampleY);
+//                    smoothMoveServoToPosition(targetServoPosition);
+                }
+                if(!sampleFound){
+                    // Gradually extend the arm until a sample is found
+                    extendArmGradually();
+                }
+            if(sampleFound && balancingTimer.seconds()>1.5){
+                currentPosition = robotConfig.intakeElbowLeftServo.getPosition();
+                if(retractIntake) {
+                    servoPos = mapAngleToServoPosition(processor.getFirstSampleAngle());
+                    intakeWristRotServo.setPosition(servoPos);
+                    robotConfig.intakeElbowLeftServo.setPosition(currentPosition - 0.04);
+                    robotConfig.intakeElbowRightServo.setPosition(currentPosition - 0.04);
+                    retractIntake = false;
+                    robotConfig.intakeWristLeftServo.setPosition(ServoConstants.INTAKE_WRIST_LEFT_HOVER_POSITION);
+                    robotConfig.intakeWristRightServo.setPosition(ServoConstants.INTAKE_WRIST_RIGHT_HOVER_POSITION);
+                }
+                if(!canTransfer) {
+                    robotConfig.intakeWristServo.setPosition(ServoConstants.INTAKE_WRIST_DOWN);
+                    if (balancingTimer.seconds() > 1.8) {
+                        robotConfig.intakeWristLeftServo.setPosition(ServoConstants.INTAKE_WRIST_LEFT_DOWN_POSITION);
+                        robotConfig.intakeWristRightServo.setPosition(ServoConstants.INTAKE_WRIST_RIGHT_DOWN_POSITION);
+                    }
+                    if (balancingTimer.seconds() > 2.1) {
+                        robotConfig.intakeClawServo.setPosition(ServoConstants.INTAKE_CLAW_CLOSED_POSITION);
+                        balancingTimer.reset();
+                        canTransfer = true;
                     }
                 }
-
-                telemetry.addData("Tracking Object", largestObject);
+                if(canTransfer && balancingTimer.seconds()>0.5)
+                    transfer(0.6);
             }
-
-            // Get the detected object positions (scaled in inches)
-            ArrayList<Point> offsets = processor.getOffsets();
-
-            // Display telemetry data
-            telemetry.addData("Sample Angle (radians)", sampleAngle);
-            telemetry.addData("Sample Angle (degrees)", sampleAngleDegrees);
-            telemetry.addData("Offsets", offsets.toString());
-            telemetry.update();
-
+            telemetry.update();// Delay per iteration to ensure smooth motion
         }
-
-        // Stop the vision processing when OpMode ends
         visionPortal.close();
-
     }
+
     public double mapAngleToServoPosition(double angle) {
-        // Define the min and max values for angle and servo position
-        double angleMin = 0;
-        double angleMax = 90;
-        double servoMin = 0.29;
-        double servoMax = 0.86;
+        double newAngle = angle * 180 / Math.PI;
+        double servoMin = 0.39, servoMax = 0.98;
+        //newAngle = Math.max(0, Math.min(180, newAngle));
+        return 0.00328 * newAngle + 0.39;
+    }
+    private void extendArmGradually() {
+        // Gradually extend the arm until a sample is detected
+        if (currentPosition < MAX_POSITION) {
+            currentPosition += EXTEND_STEP_SIZE2;
+            currentPosition = Math.min(currentPosition, MAX_POSITION);
+            robotConfig.intakeElbowLeftServo.setPosition(currentPosition);
+            robotConfig.intakeElbowRightServo.setPosition(currentPosition);
+            sleep(20); // Delay to smooth the extension
+        }
+    }
+    private void smoothMoveServoToPosition(double targetServoPosition) {
+        // Smoothly move the servo to the target position (based on Y of the sample)
+        double currentPosition = robotConfig.intakeElbowLeftServo.getPosition();
 
-        // Ensure the angle is within bounds (between 0 and 90)
-        if(angle<0)
-            angle = 180-angle;
+        if (Math.abs(currentPosition - targetServoPosition) > DEAD_ZONE) {
+            if (Math.abs(currentPosition - targetServoPosition) > STOP_THRESHOLD) {
+                if (currentPosition < targetServoPosition) {
+                    // Move the servo towards the target if it's behind
+                    robotConfig.intakeElbowLeftServo.setPosition(Math.min(currentPosition + MOVE_STEP_SIZE, targetServoPosition));
+                    robotConfig.intakeElbowRightServo.setPosition(Math.min(currentPosition + MOVE_STEP_SIZE, targetServoPosition));
+                } else {
+                    // Move the servo towards the target if it's ahead
+                    robotConfig.intakeElbowLeftServo.setPosition(Math.max(currentPosition - MOVE_STEP_SIZE, targetServoPosition));
+                    robotConfig.intakeElbowRightServo.setPosition(Math.max(currentPosition - MOVE_STEP_SIZE, targetServoPosition));
+                }
+                sleep(20); // Small delay to smooth the movement
+            }
+        } else {
+            // If within the dead zone, stop adjusting the servo
+            robotConfig.intakeElbowLeftServo.setPosition(targetServoPosition);
+            robotConfig.intakeElbowRightServo.setPosition(targetServoPosition);
+        }
+    }
+    private double mapYToServoPosition(double sampleY) {
+        // You can adjust the mapping logic here depending on how your servo should behave
+        // For simplicity, we assume a direct mapping for the Y value (just scale it appropriately)
+        double Y_MIN = -5.0; // Adjust this to the minimum Y position your system can handle
+        double Y_MAX = 5.0;  // Adjust this to the maximum Y position your system can handle
 
-        // Ensure the angle is within bounds (between 0 and 90)
-        angle = Math.max(angleMin, Math.min(angleMax, angle));
+        // Linearly map the sample Y position to the servo range
+        double rangeY = Y_MAX - Y_MIN;
+        double rangeServo = MAX_POSITION - MIN_POSITION;
 
-        // Apply the linear mapping formula with the reversed servo position range
-        double servoPosition = servoMax - ((angle - angleMin) / (angleMax - angleMin)) * (servoMax - servoMin);
+        // Calculate the scaled position of the servo based on the Y position
+        double scaledPosition = ((sampleY - Y_MIN) / rangeY) * rangeServo + MIN_POSITION;
 
+        // Ensure the calculated position is within the valid servo range
+        return Math.max(MIN_POSITION, Math.min(scaledPosition, MAX_POSITION));
+    }
+    public double mapYOffsetToServoPosition(double yoffset) {
+        double[] yoffsets = {-0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+        double[] servoPositions = {0.17, 0.2, 0.22, 0.24, 0.26, 0.27, 0.29, 0.29, 0.3, 0.31, 0.31, 0.32, 0.35, 0.37, 0.39};
+        yoffset = Math.max(-0.5, Math.min(0.9, yoffset));
 
-        return servoPosition;
+        for (int i = 0; i < yoffsets.length - 1; i++) {
+            if (yoffset >= yoffsets[i] && yoffset <= yoffsets[i + 1]) {
+                double x1 = yoffsets[i], x2 = yoffsets[i + 1];
+                double y1 = servoPositions[i], y2 = servoPositions[i + 1];
+                return y1 + ((yoffset - x1) * (y2 - y1)) / (x2 - x1);
+            }
+        }
+        return (yoffset == -0.5) ? 0.17 : (yoffset == 0.9) ? 0.39 : 0.27;
+    }
+
+    private void transfer(double timer) {
+        if (startTransferTimer) {
+            intakeTimer.reset();
+            closed = false;
+            startTransferTimer = false;
+            transfer = false;
+        }
+        if (!transfer) {
+            robotConfig.setIntakeServoPositions(
+                    ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                    ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                    ServoConstants.INTAKE_WRIST_UP,
+                    ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                    ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                    ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
+                    ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+            );
+            transfer = true;
+        }
+        if (transfer && intakeTimer.seconds() > timer+0.1) {
+            if (!closed) {
+                robotConfig.setOuttakeServoPositions(
+                        ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                        ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                        ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
+                );
+                closed = true;
+            }
+            if (intakeTimer.seconds() > timer + 0.3) {
+                robotConfig.setIntakeServoPositions(
+                        ServoConstants.INTAKE_ELBOW_RIGHT_RETRACTED_POSITION,
+                        ServoConstants.INTAKE_ELBOW_LEFT_RETRACTED_POSITION,
+                        ServoConstants.INTAKE_WRIST_UP,
+                        ServoConstants.INTAKE_WRIST_RIGHT_UP_POSITION,
+                        ServoConstants.INTAKE_WRIST_LEFT_UP_POSITION,
+                        ServoConstants.INTAKE_CLAW_OPEN_POSITION,
+                        ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
+                );
+                hasTransfered = true;
+            }
+        }
     }
 }

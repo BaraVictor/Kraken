@@ -37,6 +37,8 @@ import java.util.ArrayList;
 //@Config
 @Autonomous(name = "🐙 SampleAuto (4+0) 🐙", group = "A. Competitional")
 public class Sample extends OpMode {
+    private VisionPortal visionPortal;
+    private SampleOrientationProcessor processor;
 
     private ElapsedTime retractTimer = new ElapsedTime();
     private ElapsedTime hoverTimer = new ElapsedTime();
@@ -87,27 +89,29 @@ public class Sample extends OpMode {
 
     private final Pose score = new Pose(21, 132, toRadians(315));
 
+    private final Pose scorePre = new Pose(19, 133, toRadians(315));
+
     private final Pose sample1 = new Pose(28.5, 129, toRadians(0));
 
     private final Pose sample2 = new Pose(28.5, 138.5, toRadians(0));
 
     private final Pose sample3 = new Pose(33.5, 138, toRadians(45));
 
-    private final Pose sub1 = new Pose(65, 98, Math.toRadians(-90));
+    private final Pose sub1 = new Pose(65, 93, Math.toRadians(-90));
 
-    private final Pose subControl = new Pose(62, 120, Math.toRadians(-90));
+    private final Pose subControl = new Pose(62, 118, Math.toRadians(-90));
 
     private final Pose parkFinal = new Pose(75, 93, Math.toRadians(90));
 
 
-    private PathChain scorePreload, firstPickup, secondPickup, thirdPickup, subPath, score1, score2, score3; //?
+    private PathChain return1, scorePreload, firstPickup, secondPickup, thirdPickup, subPath, score1, score2, score3; //?
 
     public void buildPaths() {
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePreload = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(startPose), new Point(score)))
-                .setLinearHeadingInterpolation(startPose.getHeading(), score.getHeading())
+                .addPath(new BezierLine(new Point(startPose), new Point(scorePre)))
+                .setLinearHeadingInterpolation(startPose.getHeading(), scorePre.getHeading())
                 .setZeroPowerAccelerationMultiplier(4.0)
                 .addParametricCallback(0, () -> follower.setMaxPower(0.9))
                 .setPathEndTimeoutConstraint(0)
@@ -161,8 +165,16 @@ public class Sample extends OpMode {
         subPath = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(score), new Point(subControl), new Point(sub1)))
                 .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
+                .addParametricCallback(0.8, ()-> follower.setMaxPower(0.6))
                 .setLinearHeadingInterpolation(score.getHeading(), sub1.getHeading())
                 .addParametricCallback(0, ()->setSliderMinPosition())
+                .setZeroPowerAccelerationMultiplier(2.0)
+                .build();
+
+        return1 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(sub1), new Point(subControl), new Point(score)))
+                .setLinearHeadingInterpolation(sub1.getHeading(), score.getHeading())
+                .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
                 .setZeroPowerAccelerationMultiplier(4.0)
                 .build();
     }
@@ -171,6 +183,8 @@ public class Sample extends OpMode {
         switch (pathState) {
             case 0:
                 targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
+                robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_VERTICAL);
+                robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_VERTICAL);
                 follower.followPath(scorePreload);
                 setPathState(1);
                 break;
@@ -199,7 +213,7 @@ public class Sample extends OpMode {
                     transfer(0.6);
                 }
                 if(hasTransfered && robotConfig.upMotor.getCurrentPosition() > targetPosition - 50)
-                    scoreSample(0.6);
+                    scoreSample(0.5);
                 if(hasScored) {
                     follower.followPath(secondPickup);
                     setPathState(4);
@@ -221,7 +235,7 @@ public class Sample extends OpMode {
                     transfer(0.6);
                 }
                 if(hasTransfered && robotConfig.upMotor.getCurrentPosition() > targetPosition - 50)
-                    scoreSample(0.6);
+                    scoreSample(0.5);
                 if(hasScored) {
                     follower.followPath(thirdPickup);
                     setPathState(6);
@@ -229,7 +243,7 @@ public class Sample extends OpMode {
                 break;
             case 6:
                 if(!follower.isBusy()){
-                    extendAndPickUp(0.5, .05);
+                    extendAndPickUp(0.5, ServoConstants.INTAKE_WRIST_ROT_minus_45_DEGREES);
                 }
                 if(hasFinishedPickUp) {
                     follower.followPath(score3);
@@ -241,13 +255,20 @@ public class Sample extends OpMode {
                     transfer(0.6);
                   }
                 if(hasTransfered && robotConfig.upMotor.getCurrentPosition() > targetPosition - 50)
-                    scoreSample(0.6);
+                    scoreSample(0.5);
                 if(hasScored) {
                     follower.setMaxPower(0.9);
                     follower.followPath(subPath);
-                    setPathState(-1);
+                    setPathState(8);
                 }
                  break;
+            case 8:
+                if(!follower.isBusy()) {
+                    robotConfig.intakeWristRightServo.setPosition(ServoConstants.INTAKE_WRIST_RIGHT_CAMERA_POSITION);
+                    robotConfig.intakeWristLeftServo.setPosition(ServoConstants.INTAKE_WRIST_LEFT_CAMERA_POSITION);
+                    setPathState(-1);
+                }
+                break;
         }
     }
 
@@ -289,7 +310,7 @@ public class Sample extends OpMode {
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
-//        initializeCamera();
+        initializeCamera();
         resetServosToInit();
         buildPaths();
 
@@ -302,9 +323,9 @@ public class Sample extends OpMode {
     public void loop() {
 
         follower.update();
-//        processCamera();
         autonomousPathUpdate();
         controlPID();
+        processCamera();
         telemetry.addData("da",da);
         telemetry.addData("numarare", numarare);
         telemetry.addData("retractTimer", retractTimer.seconds());
@@ -444,8 +465,6 @@ public class Sample extends OpMode {
         );
     }
 
-    private VisionPortal visionPortal;
-    private SampleOrientationProcessor processor;
 
     private void initializeCamera() {
         processor = new SampleOrientationProcessor(telemetry);
@@ -457,23 +476,23 @@ public class Sample extends OpMode {
 
     private void processCamera() {
         // Process camera data and use the detected sample angle
-        double sampleAngle = processor.getSampleAngle();
-        double sampleAngleDegrees = sampleAngle * 180 / Math.PI;
-
-        // Adjust servo position based on sample angle
-        double servoPosition = getServoPositionFromAngle(sampleAngleDegrees);
-        robotConfig.intakeWristRotServo.setPosition(servoPosition);
-
-        ArrayList<org.opencv.core.Point> detectedObjects = processor.getOffsets();
-        if (!detectedObjects.isEmpty()) {
-            org.opencv.core.Point largestObject = detectedObjects.get(0);
-            for (org.opencv.core.Point obj : detectedObjects) {
-                if (obj.y > largestObject.y) { // Larger object detection logic
-                    largestObject = obj;
-                }
-            }
-            telemetry.addData("Tracking Object", largestObject);
-        }
+//        double sampleAngle = processor.getSampleAngle();
+//        double sampleAngleDegrees = sampleAngle * 180 / Math.PI;
+//
+//        // Adjust servo position based on sample angle
+//        double servoPosition = getServoPositionFromAngle(sampleAngleDegrees);
+//        robotConfig.intakeWristRotServo.setPosition(servoPosition);
+//
+//        ArrayList<org.opencv.core.Point> detectedObjects = processor.getOffsets();
+//        if (!detectedObjects.isEmpty()) {
+//            org.opencv.core.Point largestObject = detectedObjects.get(0);
+//            for (org.opencv.core.Point obj : detectedObjects) {
+//                if (obj.y > largestObject.y) { // Larger object detection logic
+//                    largestObject = obj;
+//                }
+//            }
+//            telemetry.addData("Tracking Object", largestObject);
+//        }
 
 //        telemetry.addData("Sample Angle (radians)", sampleAngle);
 //        telemetry.addData("Sample Angle (degrees)", sampleAngleDegrees);
@@ -512,14 +531,11 @@ public class Sample extends OpMode {
         if (retractTimer.seconds() > timer) { // 1.2
             robotConfig.outtakeClawServo.setPosition(ServoConstants.OUTTAKE_CLAW_OPEN_POSITION);
             if (robotConfig.outtakeClawServo.getPosition() == ServoConstants.OUTTAKE_CLAW_OPEN_POSITION) {
-                if (retractTimer.seconds() > timer + 0.3) { // 1.5
+                if (retractTimer.seconds() > timer + 0.1) { // 1.5
                     robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION);
                     robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION);
                     robotConfig.outtakeWristYServo.setPosition(ServoConstants.OUTTAKE_WRIST_Y_TRANSFER_POSITION);
-                    if (retractTimer.seconds() > timer + 0.6) { // 1.8
-                            hasScored = true;
-
-                    }
+                    hasScored = true;
                 }
 
             }
@@ -574,9 +590,11 @@ public class Sample extends OpMode {
             }
 
         }
-        if(hasTransfered )
+        if(hasTransfered ) {
             targetPosition = OuttakeConstants.OUTTAKE_MAX_POSITION;
-
+            robotConfig.outtakeElbowLeftServo.setPosition(ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_VERTICAL);
+            robotConfig.outtakeElbowRightServo.setPosition(ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_VERTICAL);
+        }
     }
 
     private void extendAndPickUp(double timer, double servoPos){ //true

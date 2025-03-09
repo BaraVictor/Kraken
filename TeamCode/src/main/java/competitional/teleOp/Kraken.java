@@ -644,7 +644,7 @@ public class Kraken extends LinearOpMode {
                 rot0 = true;
                 outtakeClawOpened = true;
                 setOuttakeState(OuttakeState.INIT);
-                if(pickupTimer.milliseconds()>150){
+                if(pickupTimer.milliseconds()>100){         //150
                     robotConfig.setIntakeServoPositions(
                             ServoConstants.INTAKE_ELBOW_RIGHT_EXTENDED_POSITION,
                             ServoConstants.INTAKE_ELBOW_LEFT_EXTENDED_POSITION,
@@ -654,7 +654,7 @@ public class Kraken extends LinearOpMode {
                             ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                             ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                     );
-                    if(transientState.milliseconds()>300){
+                    if(transientState.milliseconds()>150){  //300
                         transientState.reset();
                         setIntakeState(IntakeState.RETRACT);
                     }
@@ -674,7 +674,7 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.INTAKE_CLAW_CLOSED_POSITION,
                         ServoConstants.INTAKE_WRIST_ROT_0_DEGREES
                 );
-                if(transientState.milliseconds()>150){
+                if(transientState.milliseconds()>100){          //150
                     transientState.reset();
                     setIntakeState(IntakeState.POSTRETRACTED);
                 }

@@ -95,24 +95,24 @@ public class SpecAuto extends OpMode {
     private final Pose sample3Control1= new Pose(60, 25, toRadians(0));
 
     
-    private final Pose grab1= new Pose(11.5,1.5, toRadians(0));
+    private final Pose grab1= new Pose(14,2, toRadians(0));
 
 
     private final Pose grabLineup= new Pose(25, 27, toRadians(0));
 
-    private final Pose grabPickup= new Pose(13, 27, toRadians(0));
+    private final Pose grabPickup= new Pose(14, 27, toRadians(0));
 
 
 
     private final Pose placeControl = new Pose(20, 70, toRadians(0));
 
-    private final Pose place1 = new Pose(45.5, 71, toRadians(0));
+    private final Pose place1 = new Pose(45.8, 73, toRadians(0));
 
-    private final Pose place2 = new Pose(46.3, 69, toRadians(0));
+    private final Pose place2 = new Pose(45.8, 70, toRadians(0));
 
     private final Pose place3 = new Pose(46.3, 67, toRadians(0));
 
-    private final Pose place4 = new Pose(46.5, 65, toRadians(0));
+    private final Pose place4 = new Pose(46.3, 64, toRadians(0));
 
     private final Pose parkPose = new Pose(20, 30, toRadians(0));
 
@@ -123,6 +123,7 @@ public class SpecAuto extends OpMode {
                 .addPath(new BezierLine(new Point(startPose), new Point(scorePreload)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
                 .addParametricCallback(0.1, () -> lineupSpec())
+                .addParametricCallback(0.8,()->follower.setMaxPower(0.5))
                 .setZeroPowerAccelerationMultiplier(4.0)
                 .setPathEndTimeoutConstraint(0)
                 .build();
@@ -131,6 +132,7 @@ public class SpecAuto extends OpMode {
                 .addPath(new BezierCurve(new Point(scorePreload), new Point(sample1Control1), new Point(sample1Control2), new Point(sample1)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
                 .setPathEndTimeoutConstraint(0)
+                .addParametricCallback(0, ()->follower.setMaxPower(0.9))
                 .addParametricCallback(0.1, () -> pickupSpec())
 
                 .addPath(new BezierLine(new Point(sample1), new Point(push1)))
@@ -146,6 +148,7 @@ public class SpecAuto extends OpMode {
 
                 .addPath(new BezierLine(new Point(sample2), new Point(push2)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
+                .addParametricCallback(0, ()->follower.setMaxPower(0.9))
                 .setZeroPowerAccelerationMultiplier(5.0)
                 .setPathEndTimeoutConstraint(0)
 
@@ -157,14 +160,17 @@ public class SpecAuto extends OpMode {
 
                 .addPath(new BezierLine(new Point(sample3), new Point(grab1)))
                 .setConstantHeadingInterpolation(scorePreload.getHeading())
-                .addParametricCallback(0.7, () -> follower.setMaxPower(0.8))
-                .setZeroPowerAccelerationMultiplier(3.0)
+                .addParametricCallback(0, ()->follower.setMaxPower(0.9))
+                .addParametricCallback(0.6, () -> follower.setMaxPower(0.6))
+                .setZeroPowerAccelerationMultiplier(4.0)
                 .setPathEndTimeoutConstraint(0)
                 .build();
 
         firstPlace = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(grab1), new Point(place1)))
                 .setConstantHeadingInterpolation(grabLineup.getHeading())
+                .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
+                .addParametricCallback(0.8, ()->follower.setMaxPower(0.5))
                 .setZeroPowerAccelerationMultiplier(4.0)
                 .setPathEndTimeoutConstraint(0)
                 .build();
@@ -172,9 +178,10 @@ public class SpecAuto extends OpMode {
         secondGrab = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(place1), new Point(placeControl), new Point(grabLineup)))
                 .setConstantHeadingInterpolation(grabLineup.getHeading())
+                .addParametricCallback(0.1, () -> pickupSpec())
+                .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
                 .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
-                .addParametricCallback(0.8, () -> pickupSpec())
 
                 .addPath(new BezierLine(new Point(grabLineup), new Point(grabPickup)))
                 .setConstantHeadingInterpolation(grabLineup.getHeading())
@@ -187,15 +194,18 @@ public class SpecAuto extends OpMode {
                 .setLinearHeadingInterpolation(grab1.getHeading(), grabLineup.getHeading())
                 .setZeroPowerAccelerationMultiplier(4.0)
                 .setPathEndTimeoutConstraint(0)
+                .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
+                .addParametricCallback(0.8, ()-> follower.setMaxPower(0.5))
+
                 .build();
 
         thirdGrab = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(place2),new Point(placeControl), new Point(grabLineup)))
                 .setLinearHeadingInterpolation(place1.getHeading(), grabLineup.getHeading())
+                .addParametricCallback(0.1, () -> pickupSpec())
+                .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
                 .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
-                .addParametricCallback(0.8, ()->lowSpeed())
-                .addParametricCallback(0.1, () -> pickupSpec())
 
                 .addPath(new BezierLine(new Point(grabLineup), new Point(grabPickup)))
                 .setConstantHeadingInterpolation(grabLineup.getHeading())
@@ -208,16 +218,18 @@ public class SpecAuto extends OpMode {
                 .addPath(new BezierLine(new Point(grabPickup), new Point(place3)))
                 .setLinearHeadingInterpolation(grab1.getHeading(), grabLineup.getHeading())
                 .setZeroPowerAccelerationMultiplier(4.0)
+                .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
+                .addParametricCallback(0.8, ()-> follower.setMaxPower(0.5))
                 .setPathEndTimeoutConstraint(0)
                 .build();
 
         fourthGrab = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(place3), new Point(placeControl),new Point(grabLineup)))
                 .setLinearHeadingInterpolation(place1.getHeading(), grabLineup.getHeading())
+                .addParametricCallback(0.1, () -> pickupSpec())
+                .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
                 .setZeroPowerAccelerationMultiplier(3.0)
                 .setPathEndTimeoutConstraint(0)
-                .addParametricCallback(0.8, ()->lowSpeed())
-                .addParametricCallback(0.1, () -> pickupSpec())
 
                 .addPath(new BezierLine(new Point(grabLineup), new Point(grabPickup)))
                 .setConstantHeadingInterpolation(grabLineup.getHeading())
@@ -230,13 +242,16 @@ public class SpecAuto extends OpMode {
                 .setLinearHeadingInterpolation(grab1.getHeading(), grabLineup.getHeading())
                 .setZeroPowerAccelerationMultiplier(4.0)
                 .setPathEndTimeoutConstraint(0)
+                .addParametricCallback(0, ()-> follower.setMaxPower(0.9))
+                .addParametricCallback(0.8, ()-> follower.setMaxPower(0.5))
                 .build();
 
         park = follower.pathBuilder()
                 .addPath((new BezierCurve(new Point(place4), new Point(placeControl),new Point(grabPickup))))
                 .setLinearHeadingInterpolation(grab1.getHeading(), grabLineup.getHeading())
+                .addParametricCallback(0, ()-> follower.setMaxPower(1))
                 .addParametricCallback(0.3, () -> intakeTeleOp())
-                .addParametricCallback(0.7, () -> outtakeTeleOp())
+                .addParametricCallback(0.3, () -> outtakeTeleOp())
                 .build();
 
     }
@@ -244,7 +259,6 @@ public class SpecAuto extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                follower.setMaxPower(0.9);
                 follower.followPath(preloadDrop,true);
                 placeSpecimenOnChamber = true;
                 setPathState(1);
@@ -295,7 +309,6 @@ public class SpecAuto extends OpMode {
                     if(placeTimer.milliseconds()>80)
                         lineupSpec();
                     if(placeTimer.milliseconds()>100) {
-                        follower.setMaxPower(0.9);
                         follower.followPath(firstPlace);
                         placeSpecimenOnChamber = true;
                         setPathState(3);
@@ -350,7 +363,6 @@ public class SpecAuto extends OpMode {
                     if(placeTimer.milliseconds()>80)
                         lineupSpec();
                     if(placeTimer.milliseconds()>100) {
-                        follower.setMaxPower(0.9);
                         follower.followPath(secondPlace);
                         placeSpecimenOnChamber = true;
                         setPathState(5);
@@ -405,7 +417,6 @@ public class SpecAuto extends OpMode {
                     if(placeTimer.milliseconds()>80)
                         lineupSpec();
                     if(placeTimer.milliseconds()>100) {
-                        follower.setMaxPower(0.9);
                         follower.followPath(thirdPlace);
                         placeSpecimenOnChamber = true;
                         setPathState(7);
@@ -459,7 +470,6 @@ public class SpecAuto extends OpMode {
                     if(placeTimer.milliseconds()>80)
                         lineupSpec();
                     if(placeTimer.milliseconds()>100) {
-                        follower.setMaxPower(0.9);
                         follower.followPath(fourthPlace);
                         placeSpecimenOnChamber = true;
                         setPathState(9);
@@ -501,7 +511,6 @@ public class SpecAuto extends OpMode {
                 break;
             case 10:
                 if(!follower.isBusy()){
-                    follower.setMaxPower(0.9);
                     follower.followPath(park);
                     setPathState(-1);
                 }
