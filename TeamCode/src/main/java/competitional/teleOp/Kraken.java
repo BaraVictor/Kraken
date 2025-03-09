@@ -42,6 +42,7 @@ public class Kraken extends LinearOpMode {
     private boolean intakeDown = false;
     private boolean rot0 = true;
     private boolean placeSpecimenOnChamber = true;
+    private boolean placeSample = true;
 
     //private Follower follower;
 
@@ -321,6 +322,7 @@ public class Kraken extends LinearOpMode {
                         ServoConstants.OUTTAKE_ELBOW_RIGHT_PICKUP_POSITION,
                         ServoConstants.OUTTAKE_ELBOW_LEFT_PICKUP_POSITION
                 );
+                placeSample = true;
                 if(TransferTimer.milliseconds() > 100) {
                         setOuttakeState(OuttakeState.PLACE_SAMPLE);
                 }
@@ -330,13 +332,17 @@ public class Kraken extends LinearOpMode {
                 }
                 break;
             case PLACE_SAMPLE:
-                robotConfig.setOuttakeServoPositions(
+
+                // sample daat pe spate human player
+                if(placeSample) {
+                    robotConfig.setOuttakeServoPositions(
                         ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
                         ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
-                        ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
-                        ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
-                        ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
-                );
+                        ServoConstants.OUTTAKE_WRIST_Y_PICKUP_SPECIMEN_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_RIGHT_SPECIMEN_POSITION,
+                        ServoConstants.OUTTAKE_ELBOW_LEFT_SPECIMEN_POSITION
+                    );
+                }
 
                 if(gamepad1.left_bumper && OuttakeServoTimer.milliseconds() > 150) {
                     OuttakeServoTimer.reset();
@@ -348,15 +354,30 @@ public class Kraken extends LinearOpMode {
 
                 if(gamepad1.dpad_down) {
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                    placeSample = true;
+
                 }
                 else if(gamepad1.dpad_up) {
                     targetPosition = OuttakeConstants.OUTTAKE_TOP_SAMPLE_BOX;
-                }
-                else if(gamepad1.dpad_right) {
-                    targetPosition = OuttakeConstants.OUTTAKE_SECOND_SPECIMEN_BAR ;
+                    robotConfig.setOuttakeServoPositions(
+                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                            ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
+                    );
+                    placeSample = false;
                 }
                 else if(gamepad1.dpad_left) {
                     targetPosition = OuttakeConstants.OUTTAKE_BOTTOM_SAMPLE_BOX;
+                    robotConfig.setOuttakeServoPositions(
+                            ServoConstants.OUTTAKE_CLAW_CLOSED_POSITION,
+                            ServoConstants.OUTTAKE_WRIST_ROT_180_DEGREES,
+                            ServoConstants.OUTTAKE_WRIST_Y_PLACE_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_RIGHT_PLACE_SAMPLE_POSITION,
+                            ServoConstants.OUTTAKE_ELBOW_LEFT_PLACE_SAMPLE_POSITION
+                    );
+                    placeSample = false;
                 }
 
                 if(gamepad2.left_bumper){
@@ -452,6 +473,10 @@ public class Kraken extends LinearOpMode {
                 if(gamepad1.dpad_down) {
                     areSlidesDown = false;
                     targetPosition = OuttakeConstants.OUTTAKE_MIN_POSITION;
+                }
+                if(gamepad1.a) {
+                    setOuttakeState(OuttakeState.PICKUP);
+                    setIntakeState(IntakeState.LIFT_EXTEND);
                 }
                 break;
             case PLACE_SPECIMENE:
