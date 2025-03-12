@@ -12,9 +12,20 @@
 // Custom definitions may go here
 
 // Include common definitions from above.
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://repo.dairy.foundation/releases"
+        }
+    }
+    dependencies {
+        classpath "dev.frozenmilk:Load:0.1.0"
+    }
+}
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
-
+apply plugin: 'dev.frozenmilk.sinister.sloth.load'
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
@@ -23,10 +34,19 @@ android {
     }
 }
 
+repositories {
+    maven {
+        url = "https://repo.dairy.foundation/releases"
+    }
+    maven {
+        url = "https://repo.dairy.foundation/snapshots"
+    }
+}
 dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
-
+    implementation("dev.frozenmilk.sinister:Sloth:0.1.0")
+    implementation("dev.frozenmilk.dairy:Core:2.1.0")
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
 }
